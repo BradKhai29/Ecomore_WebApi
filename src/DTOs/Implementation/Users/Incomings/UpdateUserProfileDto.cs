@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DTOs.Implementation.Users.Incomings
+{
+    internal class UpdateUserProfileDto
+    {
+        public Guid Id { get; set; }
+
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        public IFormFile
+    }
+}
