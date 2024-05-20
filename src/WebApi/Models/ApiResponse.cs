@@ -66,6 +66,8 @@
         {
             public const string DatabaseError = "Something wrong happen with database operation.";
 
+            public const string ServiceError = "Something wrong happen with the service.";
+            
             public const string FailedToSendEmail = "Fail to send email.";
 
             public const string InvalidToken = "The token is expired or not valid.";

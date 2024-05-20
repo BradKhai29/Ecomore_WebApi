@@ -6,11 +6,19 @@ namespace DataAccess.Entities
     {
         public Guid AccountStatusId { get; set; }
 
-        public string UserName { get; set; }
-
         public string Email { get; set; }
 
         public string PasswordHash { get; set; }
+
+        public int AccessFailedCount { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the date and time, in UTC, when this system account lockout ends.
+        /// </summary>
+        /// <remarks>
+        ///     A value in the past means the user is not locked out.
+        /// </remarks>
+        public DateTime LockoutEnd { get; set; }
 
         public DateTime UpdatedAt { get; set; }
 

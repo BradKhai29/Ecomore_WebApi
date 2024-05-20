@@ -4,11 +4,11 @@ using DataAccess.UnitOfWorks.Base;
 
 namespace BusinessLogic.Services.Core.Implemetation
 {
-    internal class AdminProductService
+    internal class SystemAccountProductService
     {
         private readonly IUnitOfWork<AppDbContext> _unitOfWork;
 
-        public AdminProductService(IUnitOfWork<AppDbContext> unitOfWork)
+        public SystemAccountProductService(IUnitOfWork<AppDbContext> unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

@@ -6,6 +6,8 @@ namespace DataAccess.Entities
     public class UserEntity : IdentityUser<Guid>, IGuidEntity
     {
         public const string NameSeparator = "[:]";
+        public const string AssetIdPlaceHolder = "assetId";
+        public const string AvatarUrlSeparator = ";";
         public static readonly int NameSeparatorLength = NameSeparator.Length;
 
         public string FullName { get; set; }

@@ -1,5 +1,4 @@
 ﻿using DataAccess.Entities.Base;
-using Microsoft.AspNetCore.Identity;
 
 namespace DataAccess.Entities
 {
@@ -16,6 +15,8 @@ namespace DataAccess.Entities
         ///     Gets or sets the token value.
         /// </summary>
         public string Value { get; set; }
+
+        public DateTime CreatedAt { get; set; }
 
         public DateTime ExpiredAt { get; set; }
 

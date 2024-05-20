@@ -89,10 +89,9 @@ namespace BusinessLogic.Services.Core.Implemetation
             var account = new SystemAccountEntity
             {
                 Id = DefaultValues.SystemId,
-                UserName = _defaultSystemAccountOptions.UserName,
                 Email = _defaultSystemAccountOptions.Email,
                 PasswordHash = _passwordService.GetHashPassword(password: _defaultSystemAccountOptions.Password),
-                AccountStatusId = AccountStatuses.PendingConfirmed.Id,
+                AccountStatusId = AccountStatuses.EmailConfirmed.Id,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };

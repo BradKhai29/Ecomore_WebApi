@@ -239,6 +239,9 @@ namespace DataAccess.Migrations
                     b.Property<int>("QuantityInStock")
                         .HasColumnType("int");
 
+                    b.Property<int>("SellingCount")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("DECIMAL(12,2)");
 
@@ -346,6 +349,9 @@ namespace DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("AccountStatusId")
                         .HasColumnType("uniqueidentifier");
 
@@ -356,6 +362,9 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("NVARCHAR(200)");
 
+                    b.Property<DateTime>("LockoutEnd")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -363,18 +372,14 @@ namespace DataAccess.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("DATETIME");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(50)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AccountStatusId");
 
-                    b.HasIndex("UserName")
+                    b.HasIndex("Email")
                         .IsUnique();
 
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("UserName"), false);
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Email"), false);
 
                     b.ToTable("SystemAccounts", (string)null);
                 });
@@ -400,12 +405,15 @@ namespace DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("DATETIME");
+
                     b.Property<DateTime>("ExpiredAt")
                         .HasColumnType("DATETIME");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("SystemAccountId")
                         .HasColumnType("uniqueidentifier");
@@ -416,16 +424,7 @@ namespace DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Name"), false);
-
                     b.HasIndex("SystemAccountId");
-
-                    b.HasIndex("Value")
-                        .IsUnique();
-
-                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex("Value"), false);
 
                     b.ToTable("SystemAccountTokens", (string)null);
                 });

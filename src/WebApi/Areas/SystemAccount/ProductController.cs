@@ -1,18 +1,17 @@
 ﻿using BusinessLogic.Services.Core.Base;
-using WebApi.DTOs.Implementation.Products.Outgoings;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.DTOs.Implementation.Products.Outgoings;
 using WebApi.Models;
 
-namespace WebApi.Areas.Admin
+namespace WebApi.Areas.SystemAccount
 {
     [Route("api/admin/[controller]")]
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IAdminProductService _productService;
+        private readonly ISystemAccountProductService _productService;
 
-        public ProductController(IAdminProductService productService)
+        public ProductController(ISystemAccountProductService productService)
         {
             _productService = productService;
         }
@@ -36,5 +35,7 @@ namespace WebApi.Areas.Admin
 
             return Ok(value: ApiResponse.Success(body: productDtos));
         }
+
+
     }
 }

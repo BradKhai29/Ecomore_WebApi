@@ -10,7 +10,7 @@ namespace WebApi.DependencyInjection
     /// </summary>
     public static class OptionsConfiguration
     {
-        public static IServiceCollection AddAppOptions<TAppOptions>(
+        private static IServiceCollection AddAppOptions<TAppOptions>(
             this IServiceCollection services,
             ConfigurationManager configurationManager
         )
@@ -26,12 +26,15 @@ namespace WebApi.DependencyInjection
 
         public static IServiceCollection AddOptionsConfiguration(
             this IServiceCollection services,
-            ConfigurationManager configurationManager
-        )
+            ConfigurationManager configurationManager)
         {
             #region SystemAccount JwtTokenOptions.
             services.AddAppOptions<Options.Models.Jwts.SystemAccount.AccessTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.PasswordHashOptions>(configurationManager);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.RefreshTokenOptions>(configurationManager);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.ResetPasswordTokenOptions>(configurationManager);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.RegisterConfirmationTokenOptions>(configurationManager);
+            services.AddAppOptions<SystemAccountLoginConstraintsOptions>(configurationManager);
+            services.AddAppOptions<PasswordHashOptions>(configurationManager);
             #endregion
 
             #region UserAccount JwtTokenOptions.
@@ -44,6 +47,7 @@ namespace WebApi.DependencyInjection
             services.AddAppOptions<MailOptions>(configurationManager);
             services.AddAppOptions<PayOsOptions>(configurationManager);
             services.AddAppOptions<DefaultSystemAccountOptions>(configurationManager);
+            services.AddAppOptions<CloudinaryOptions>(configurationManager);
 
             return services;
         }

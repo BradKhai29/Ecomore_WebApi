@@ -2,7 +2,10 @@
 
 namespace DataAccess.Entities
 {
-    public partial class ProductEntity : GuidEntity, ICreatedEntity, IUpdatedEntity
+    public partial class ProductEntity : 
+        GuidEntity,
+        ICreatedEntity,
+        IUpdatedEntity
     {
         public Guid CategoryId { get; set; }
 

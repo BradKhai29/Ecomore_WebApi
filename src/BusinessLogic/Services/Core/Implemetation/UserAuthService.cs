@@ -31,6 +31,8 @@ namespace BusinessLogic.Services.Core.Implemetation
                 {
                     await _unitOfWork.CreateTransactionAsync(cancellationToken: cancellationToken);
 
+                    user = await _unitOfWork.UserRepository.FindByIdAsync(id: user.Id);
+
                     user.AccountStatusId = AccountStatuses.EmailConfirmed.Id;
                     user.EmailConfirmed = true;
 
@@ -55,7 +57,7 @@ namespace BusinessLogic.Services.Core.Implemetation
             return result;
         }
 
-        public Task<bool> IsEmailExistedAsync(
+        public Task<bool> IsEmailRegisteredAsync(
             string email,
             CancellationToken cancellationToken)
         {

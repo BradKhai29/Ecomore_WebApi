@@ -2,10 +2,10 @@
 {
     public static class UserCustomClaimTypes
     {
-        public const string AvatarUrl = "avatarUrl";
+        public const string AvatarUrl = "avatar_url";
 
-        public const string FullName = "fullname";
+        public const string FullName = "full_name";
 
-        public const string UserId = "userid";
+        public const string UserId = "user_id";
     }
 }

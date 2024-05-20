@@ -42,6 +42,11 @@ namespace BusinessLogic
             services.AddScoped<IUserAuthService, UserAuthService>();
 
             // System-Account (Admin) services section.
+            services.AddScoped<ISystemAccountAuthService, SystemAccountAuthService>();
+            services.AddScoped<ISystemAccountService, SystemAccountService>();
+            services.AddScoped<ISystemAccountAuthService, SystemAccountAuthService>();
+            services.AddScoped<ISystemAccountTokenService, SystemAccountTokenService>();
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
         }
@@ -50,6 +55,7 @@ namespace BusinessLogic
         {
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IMailService, GmailService>();
+            services.AddScoped<IDistributedFileStorageService, CloudinaryService>();
 
             return services;
         }

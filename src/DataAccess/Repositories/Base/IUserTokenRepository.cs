@@ -24,19 +24,5 @@ namespace DataAccess.Repositories.Base
         Task<int> BulkDeleteByTokenIdAsync(
             Guid tokenId,
             CancellationToken cancellationToken);
-
-        /// <summary>
-        ///     Find the target userToken by the input <paramref name="tokenId"/>.
-        /// </summary>
-        /// <param name="tokenId">
-        ///     The tokenId that will be used to find.
-        /// </param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>
-        ///     The userToken record from the database.
-        /// </returns>
-        Task<UserTokenEntity> FindByTokenIdAsync(
-            Guid tokenId,
-            CancellationToken cancellationToken);
     }
 }

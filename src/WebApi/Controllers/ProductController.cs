@@ -22,6 +22,11 @@ namespace WebApi.Controllers
         {
             var products = await _productService.GetAllProductsAsync(cancellationToken);
 
+            if (Equals(products, null))
+            {
+                return NoContent();
+            }
+
             var productDtos = products.Select(selector: item => new GetProductForGeneralDisplayDto
             {
                 Id = item.Id,
@@ -39,23 +44,23 @@ namespace WebApi.Controllers
 
         [HttpGet("{productId}")]
         public async Task<IActionResult> FindProductByIdForDetailDisplayAsync(
-            Guid categoryId,
+            Guid productId,
             CancellationToken cancellationToken)
         {
             var foundProduct = await _productService.FindProductByIdForDetailDisplayAsync(
-                productId: categoryId,
+                productId: productId,
                 cancellationToken: cancellationToken);
 
             if (Equals(foundProduct, null))
             {
-                string errorMessage = $"Product with id=[{categoryId}] is not found.";
+                string errorMessage = $"Product with id [{productId}] is not found.";
 
                 return NotFound(ApiResponse.Failed(errorMessage));
             }
 
             var productDto = new GetProductByIdForDetailDisplayDto
             {
-                Id = categoryId,
+                Id = productId,
                 Category = new GetCategoryByIdForDetailDisplayDto
                 {
                     Id = foundProduct.Category.Id,
@@ -80,6 +85,11 @@ namespace WebApi.Controllers
             var products = await _productService.FindAllProductsByCategoryIdAsync(
                 categoryId: categoryId,
                 cancellationToken: cancellationToken);
+
+            if (Equals(products, null))
+            {
+                return NoContent();
+            }
 
             var productDtos = products.Select(item => new GetProductForGeneralDisplayDto
             {

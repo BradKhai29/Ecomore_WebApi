@@ -27,7 +27,7 @@ namespace WebApi.Controllers.UserAuths
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshAccessTokenAsync(
             [FromBody]
-            RefreshAccessTokenDto refreshAccessTokenDto,
+            UserRefreshAccessTokenDto refreshAccessTokenDto,
             CancellationToken cancellationToken)
         {
             // Validate the access token.
@@ -116,7 +116,7 @@ namespace WebApi.Controllers.UserAuths
                 user: foundUser,
                 tokenId: refreshTokenId);
 
-            var responseDto = new RefreshAccessTokenDto
+            var responseDto = new UserRefreshAccessTokenDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,

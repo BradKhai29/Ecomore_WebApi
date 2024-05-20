@@ -12,5 +12,36 @@ namespace DataAccess.Repositories.Implementation
         public CategoryRepository(DbContext dbContext) : base(dbContext)
         {
         }
+
+        public Task<int> BulkDeleteByIdAsync(Guid categoryId, CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .Where(predicate: category => category.Id == categoryId)
+                .ExecuteDeleteAsync(cancellationToken: cancellationToken);
+        }
+
+        public Task<int> BulkUpdateAsync(CategoryEntity categoryEntity, CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .Where(predicate: category => category.Id == categoryEntity.Id)
+                .ExecuteUpdateAsync(
+                    setPropertyCalls: category => category
+                        .SetProperty(
+                            category => category.Name,
+                            category => categoryEntity.Name),
+                    cancellationToken: cancellationToken);
+        }
+
+        public async Task<IEnumerable<CategoryEntity>> GetAllAsync(CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Select(category => new CategoryEntity
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
     }
 }

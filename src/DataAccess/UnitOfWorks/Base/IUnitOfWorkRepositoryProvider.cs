@@ -26,5 +26,9 @@ namespace DataAccess.UnitOfWorks.Base
         IPaymentMethodRepository PaymentMethodRepository { get; }
 
         IUserTokenRepository UserTokenRepository { get; }
+
+        ISystemAccountTokenRepository SystemAccountTokenRepository { get; }
+
+        IHealthCheckRepository HealthCheckRepository { get; }
     }
 }

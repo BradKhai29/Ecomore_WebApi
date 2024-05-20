@@ -27,6 +27,50 @@ namespace DataAccess.Repositories.Implementation
             return _userManager.CreateAsync(user: newEntity);
         }
 
+        public Task<int> BulkUpdateUserAvatarAsync(
+            UserEntity userToUpdate,
+            CancellationToken cancellationToken)
+        {
+            var updateDateTime = DateTime.UtcNow;
+
+            return _dbSet
+                .Where(user => user.Id == userToUpdate.Id)
+                .ExecuteUpdateAsync(
+                    setPropertyCalls: user => user
+                        .SetProperty(
+                            user => user.AvatarUrl,
+                            user => userToUpdate.AvatarUrl)
+                        .SetProperty(
+                            user => user.UpdatedAt,
+                            user => updateDateTime),
+                    cancellationToken: cancellationToken);
+        }
+
+        public Task<int> BulkUpdateUserProfileAsync(
+            UserEntity userToUpdate,
+            CancellationToken cancellationToken)
+        {
+            var updateDateTime = DateTime.UtcNow;
+
+            return _dbSet
+                .Where(user => user.Id == userToUpdate.Id)
+                .ExecuteUpdateAsync(
+                    setPropertyCalls: user => user
+                        .SetProperty(
+                            user => user.FullName,
+                            user => userToUpdate.FullName)
+                        .SetProperty(
+                            user => user.PhoneNumber,
+                            user => userToUpdate.PhoneNumber)
+                        .SetProperty(
+                            user => user.Gender,
+                            user => userToUpdate.Gender)
+                        .SetProperty(
+                            user => user.UpdatedAt,
+                            user => updateDateTime),
+                    cancellationToken: cancellationToken);
+        }
+
         public override Task<UserEntity> FindByIdAsync(Guid id)
         {
             return _userManager.FindByIdAsync(userId: id.ToString());
@@ -42,6 +86,7 @@ namespace DataAccess.Repositories.Implementation
             CancellationToken cancellationToken)
         {
             return _dbSet
+                .AsNoTracking()
                 .Where(user => user.Id == userId)
                 .Select(user => new UserEntity
                 {
@@ -49,6 +94,7 @@ namespace DataAccess.Repositories.Implementation
                     Email = user.Email,
                     UserName = user.UserName,
                     FullName = user.FullName,
+                    Gender = user.Gender,
                     PhoneNumber = user.PhoneNumber,
                     AvatarUrl = user.AvatarUrl,
                     CreatedAt = user.CreatedAt,

@@ -25,7 +25,9 @@ namespace DataAccess.Configurations
                 .HasDefaultValue(DefaultValues.UserAvatarUrl)
                 .IsRequired();
 
-            builder.Property(user => user.Email).HasColumnType(SqlDataTypes.SqlServer.NVARCHAR_200);
+            builder
+                .Property(user => user.Email)
+                .HasColumnType(SqlDataTypes.SqlServer.NVARCHAR_200);
 
             builder.Property(user => user.AccountStatusId).IsRequired();
 

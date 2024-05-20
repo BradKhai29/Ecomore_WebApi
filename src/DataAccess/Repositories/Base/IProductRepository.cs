@@ -28,6 +28,14 @@ namespace DataAccess.Repositories.Base
             Guid productId,
             CancellationToken cancellationToken);
 
+        Task<ProductEntity> FindByIdForAddingToCartAsync(
+            Guid productId,
+            CancellationToken cancellationToken);
+
+        Task<ProductEntity> FindByIdForShoppingCartDisplayAsync(
+            Guid productId,
+            CancellationToken cancellationToken);
+
         Task<IEnumerable<ProductEntity>> FindAllProductsByCategoryIdAsync(
             Guid categoryId,
             CancellationToken cancellationToken);

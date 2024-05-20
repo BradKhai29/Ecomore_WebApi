@@ -1,11 +1,13 @@
 ﻿using BusinessLogic.Services.Core.Base;
 using DataAccess.Entities;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.DTOs.Implementation.UserAuths.Incomings;
 using WebApi.DTOs.Implementation.UserAuths.Outgoings;
+using WebApi.Helpers;
 using WebApi.Models;
+using WebApi.Shared.AppConstants;
 
 namespace WebApi.Controllers.UserAuths
 {
@@ -13,16 +15,16 @@ namespace WebApi.Controllers.UserAuths
     ///     Controller that handles some operations related to
     ///     user login problems.
     /// </summary>
-    [Route("api/auth/user/login")]
+    [Route("api/auth/user")]
     [ApiController]
-    public class UserLoginController : ControllerBase
+    public class UserAuthController : ControllerBase
     {
         private readonly IUserService _userService;
         private readonly IUserAuthService _userAuthService;
         private readonly IUserTokenService _userTokenService;
         private readonly SignInManager<UserEntity> _signInManager;
 
-        public UserLoginController(
+        public UserAuthController(
             IUserService userService,
             IUserAuthService userAuthService,
             IUserTokenService userTokenService,
@@ -34,18 +36,18 @@ namespace WebApi.Controllers.UserAuths
             _signInManager = signInManager;
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(
             UserLoginDto loginDto,
             CancellationToken cancellationToken)
         {
             loginDto.NormalizeAllProperties();
 
-            var isExisted = await _userAuthService.IsEmailExistedAsync(
+            var hasRegisterd = await _userAuthService.IsEmailRegisteredAsync(
                 email: loginDto.Email,
                 cancellationToken: cancellationToken);
 
-            if (!isExisted)
+            if (!hasRegisterd)
             {
                 return NotFound(ApiResponse.Failed($"No account with email [{loginDto.Email}] has registed."));
             }
@@ -112,13 +114,54 @@ namespace WebApi.Controllers.UserAuths
                 user: foundUser,
                 tokenId: refreshTokenId);
 
-            var loginResponseDto = new UserLoginResponseDto
+            var loginResponseDto = new LoginResponseDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
             };
 
+            // Set the guestId cookie and guestId from shopping cart
+            // to this signed-in userId.
+            HttpContextHelper.SetGuestId(HttpContext, foundUser.Id);
+            ShoppingCartHelper.SetGuestIdToShoppingCart(HttpContext, foundUser.Id);
+
             return Ok(ApiResponse.Success(loginResponseDto));
+        }
+
+        [Authorize(AuthenticationSchemes = CustomAuthenticationSchemes.UserAccountScheme)]
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogoutAsync(
+            [FromBody]
+            UserLogoutDto logoutDto,
+            CancellationToken cancellationToken)
+        {
+            // Validate the refresh token.
+            var refreshToken = logoutDto.RefreshToken;
+
+            var refreshTokenValidationResult = await _userTokenService.ValidateRefreshTokenAsync(
+                refreshToken: refreshToken,
+                cancellationToken: cancellationToken);
+
+            if (!refreshTokenValidationResult.IsSuccess)
+            {
+                return BadRequest(ApiResponse.Failed(refreshTokenValidationResult.ErrorMessages));
+            }
+
+            // Get credentials that encapsulated from the refresh token to use later for the remove.
+            var refreshTokenCredentials = refreshTokenValidationResult.Value;
+
+            var removeRefreshTokenResult = await _userTokenService.RemoveUserTokenByIdAsync(
+                tokenId: refreshTokenCredentials.Id,
+                cancellationToken: cancellationToken);
+
+            if (!removeRefreshTokenResult)
+            {
+                return StatusCode(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+            }
+
+            return Ok(ApiResponse.Success(default));
         }
     }
 }

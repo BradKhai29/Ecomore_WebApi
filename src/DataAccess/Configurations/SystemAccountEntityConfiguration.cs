@@ -15,18 +15,18 @@ namespace DataAccess.Configurations
             builder.HasKey(account => account.Id);
 
             builder
-                .Property(account => account.UserName)
-                .HasColumnType(SqlDataTypes.SqlServer.NVARCHAR_50)
-                .IsRequired();
-
-            builder.HasIndex(account => account.UserName).IsClustered(false).IsUnique();
-
-            builder
                 .Property(account => account.Email)
                 .HasColumnType(SqlDataTypes.SqlServer.NVARCHAR_200)
                 .IsRequired();
 
-            builder.Property(account => account.PasswordHash).IsRequired();
+            builder
+                .HasIndex(account => account.Email)
+                .IsClustered(false)
+                .IsUnique();
+
+            builder
+                .Property(account => account.PasswordHash)
+                .IsRequired();
 
             builder
                 .Property(account => account.CreatedAt)

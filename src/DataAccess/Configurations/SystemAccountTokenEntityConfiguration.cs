@@ -20,21 +20,17 @@ namespace DataAccess.Configurations
                 .IsRequired();
 
             builder
-                .HasIndex(token => token.Name)
-                .IsClustered(false);
-
-            builder
                 .Property(token => token.Value)
                 .HasColumnType(SqlDataTypes.SqlServer.VARCHAR_50)
                 .IsRequired();
 
             builder
-                .HasIndex(token => token.Value)
-                .IsClustered(false)
-                .IsUnique(true);
+                .Property(token => token.SystemAccountId)
+                .IsRequired();
 
             builder
-                .Property(token => token.SystemAccountId)
+                .Property(token => token.CreatedAt)
+                .HasColumnType(SqlDataTypes.SqlServer.DATETIME)
                 .IsRequired();
 
             builder

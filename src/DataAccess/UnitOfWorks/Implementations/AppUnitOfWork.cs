@@ -8,18 +8,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DataAccess.UnitOfWorks.Implementations;
 
-/*
-system-acc (done)
-account-stat (done)
-user (done)
-roles (done)
-category (done)
-product status (done)
-product (done)
-order-status (done)
-*/
-
-
 public class AppUnitOfWork<TContext> : IUnitOfWork<TContext>
     where TContext : DbContext
 {
@@ -42,6 +30,8 @@ public class AppUnitOfWork<TContext> : IUnitOfWork<TContext>
     private IOrderStatusRepository _orderStatusRepository;
     private IPaymentMethodRepository _paymentMethodRepository;
     private IUserTokenRepository _userTokenRepository;
+    private ISystemAccountTokenRepository _systemAccountTokenRepository;
+    private IHealthCheckRepository _healthCheckRepository;
 
     // Properties.
     public IProductRepository ProductRepository
@@ -141,6 +131,26 @@ public class AppUnitOfWork<TContext> : IUnitOfWork<TContext>
             _userTokenRepository ??= new UserTokenRepository(_dbContext);
 
             return _userTokenRepository;
+        }
+    }
+
+    public ISystemAccountTokenRepository SystemAccountTokenRepository
+    {
+        get
+        {
+            _systemAccountTokenRepository ??= new SystemAccountTokenRepository(_dbContext);
+
+            return _systemAccountTokenRepository;
+        }
+    }
+
+    public IHealthCheckRepository HealthCheckRepository
+    {
+        get
+        {
+            _healthCheckRepository ??= new HealthCheckRepository(_dbContext);
+
+            return _healthCheckRepository;
         }
     }
 
