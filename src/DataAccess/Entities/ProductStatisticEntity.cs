@@ -1,6 +1,6 @@
 ﻿namespace DataAccess.Entities
 {
-    public partial class ProductStatisticEntity
+    public partial class ProductEntity
     {
         public int SellingCount { get; set; }
     }

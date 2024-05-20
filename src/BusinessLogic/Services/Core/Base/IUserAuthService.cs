@@ -15,11 +15,12 @@ namespace BusinessLogic.Services.Core.Base
             string password);
 
         /// <summary>
-        ///     Check if the input email is existed or not.
+        ///     Check if the input email has been registered
+        ///     in this system or not.
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        Task<bool> IsEmailExistedAsync(
+        Task<bool> IsEmailRegisteredAsync(
             string email,
             CancellationToken cancellationToken);
 

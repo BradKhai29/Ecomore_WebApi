@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using WebApi.DTOs.Implementation.UserAuths.Incomings;
 using WebApi.Models;
+using WebApi.Shared.AppConstants;
 
 namespace WebApi.Controllers.UserAuths
 {
@@ -25,11 +26,13 @@ namespace WebApi.Controllers.UserAuths
         private readonly IWebHostEnvironment _webHostEnvironment;
 
         public UserRegisterController(
+            IUserService userService,
             IUserAuthService userAuthService,
             IMailService mailService,
             IUserTokenService userTokenService,
             IWebHostEnvironment webHostEnvironment)
         {
+            _userService = userService;
             _userAuthService = userAuthService;
             _mailService = mailService;
             _userTokenService = userTokenService;
@@ -44,7 +47,7 @@ namespace WebApi.Controllers.UserAuths
             registerDto.NormalizeAllProperties();
 
             // Check if the registered email is existed or not.
-            var isEmailExisted = await _userAuthService.IsEmailExistedAsync(
+            var isEmailExisted = await _userAuthService.IsEmailRegisteredAsync(
                 email: registerDto.Email,
                 cancellationToken: cancellationToken);
 
@@ -64,14 +67,14 @@ namespace WebApi.Controllers.UserAuths
                 // Set the status for the new user account.
                 AccountStatusId = AccountStatuses.PendingConfirmed.Id,
                 AvatarUrl = DefaultValues.UserAvatarUrl,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             // Validate if the password is conform the format or not.
             var passwordValidationResult = await _userAuthService.ValidatePasswordAsync(
                 user: newUser,
-            password: registerDto.Password);
+                password: registerDto.Password);
 
             if (!passwordValidationResult.Succeeded)
             {
@@ -116,9 +119,9 @@ namespace WebApi.Controllers.UserAuths
 
             var mailTemplatePath = Path.Combine(
                 path1: _webHostEnvironment.ContentRootPath,
-                path2: "Others",
-                path3: "MailTemplate",
-                path4: "register_confirm.html");
+                path2: AppFolders.Others,
+                path3: AppFolders.MailTemplate,
+                path4: AppFiles.RegisterConfirmationMailTemplateFile);
 
             var mailContent = await _mailService.BuildRegisterConfirmMailContentAsync(
                 templatePath: mailTemplatePath,
@@ -144,7 +147,7 @@ namespace WebApi.Controllers.UserAuths
         {
             var validationResult = await _userTokenService.ValidateRegisterConfirmationTokenAsync(
                 confirmationToken: registerConfirmationToken,
-            cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken);
 
             if (!validationResult.IsSuccess)
             {
@@ -177,11 +180,11 @@ namespace WebApi.Controllers.UserAuths
             string email,
             CancellationToken cancellationToken)
         {
-            var isExisted = await _userAuthService.IsEmailExistedAsync(
+            var hasRegistered = await _userAuthService.IsEmailRegisteredAsync(
             email: email,
                 cancellationToken: cancellationToken);
 
-            if (!isExisted)
+            if (!hasRegistered)
             {
                 return NotFound(ApiResponse.Failed($"No account with email [{email}] has registed."));
             }
@@ -234,9 +237,9 @@ namespace WebApi.Controllers.UserAuths
 
             var mailTemplatePath = Path.Combine(
                 path1: _webHostEnvironment.ContentRootPath,
-                path2: "Others",
-                path3: "MailTemplate",
-                path4: "register_confirm.html");
+                path2: AppFolders.Others,
+                path3: AppFolders.MailTemplate,
+                path4: AppFiles.RegisterConfirmationMailTemplateFile);
 
             var mailContent = await _mailService.BuildRegisterConfirmMailContentAsync(
                 templatePath: mailTemplatePath,

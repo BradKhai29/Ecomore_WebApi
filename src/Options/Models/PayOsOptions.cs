@@ -1,14 +1,13 @@
-﻿using System;
-using System.Text;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Options.Commons.Constants;
 using Options.Models.Base;
+using System.Text;
 
 namespace Options.Models
 {
     public class PayOsOptions : AppOptions
     {
-        public const string ParentSectionName = "Payment";
         public const string SectionName = "PayOS";
 
         public string Issuer { get; set; }
@@ -41,7 +40,7 @@ namespace Options.Models
         public override void Bind(IConfiguration configuration)
         {
             configuration
-                .GetRequiredSection(ParentSectionName)
+                .GetRequiredSection(AppSettingsSections.Area.Payment)
                 .GetRequiredSection(SectionName)
                 .Bind(instance: this);
         }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using DataAccess.Entities.Base;
 
 namespace DataAccess.Entities
@@ -49,14 +50,13 @@ namespace DataAccess.Entities
 
         public static string GenerateRandomNumberCode(int length)
         {
-            // Use a secure random number generator
-            Random random = new();
-
             // Build the code string with random digits
             StringBuilder code = new(length);
+
             for (int i = 0; i < length; i++)
             {
-                code.Append(random.Next(0, 10)); // Generate digit between 0 and 9 (inclusive)
+                var number = RandomNumberGenerator.GetInt32(0, 9);
+                code.Append(number); // Generate digit between 0 and 9 (inclusive).
             }
 
             return code.ToString();

@@ -79,9 +79,10 @@ namespace DataAccess.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AccountStatusId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserName = table.Column<string>(type: "NVARCHAR(50)", nullable: false),
                     Email = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false),
+                    LockoutEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "DATETIME", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "DATETIME", nullable: false)
                 },
@@ -204,8 +205,9 @@ namespace DataAccess.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SystemAccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Value = table.Column<string>(type: "VARCHAR(50)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "DATETIME", nullable: false),
                     ExpiredAt = table.Column<DateTime>(type: "DATETIME", nullable: false)
                 },
                 constraints: table =>
@@ -369,7 +371,8 @@ namespace DataAccess.Migrations
                     CreatedAt = table.Column<DateTime>(type: "DATETIME", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "DATETIME", nullable: false),
-                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SellingCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -585,29 +588,16 @@ namespace DataAccess.Migrations
                 column: "AccountStatusId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SystemAccounts_UserName",
+                name: "IX_SystemAccounts_Email",
                 table: "SystemAccounts",
-                column: "UserName",
+                column: "Email",
                 unique: true)
-                .Annotation("SqlServer:Clustered", false);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SystemAccountTokens_Name",
-                table: "SystemAccountTokens",
-                column: "Name")
                 .Annotation("SqlServer:Clustered", false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SystemAccountTokens_SystemAccountId",
                 table: "SystemAccountTokens",
                 column: "SystemAccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SystemAccountTokens_Value",
-                table: "SystemAccountTokens",
-                column: "Value",
-                unique: true)
-                .Annotation("SqlServer:Clustered", false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",

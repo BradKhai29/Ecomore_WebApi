@@ -32,21 +32,6 @@ namespace DataAccess.Repositories.Implementation
                 .ExecuteDeleteAsync(cancellationToken: cancellationToken);
         }
 
-        public Task<UserTokenEntity> FindByTokenIdAsync(Guid tokenId, CancellationToken cancellationToken)
-        {
-            return _dbSet
-                .AsNoTracking()
-                .Where(token => token.Id == tokenId)
-                .Select(token => new UserTokenEntity
-                {
-                    Id = token.Id,
-                    UserId = token.UserId,
-                    ExpiredAt = token.ExpiredAt,
-                    CreatedAt = token.CreatedAt
-                })
-                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
-        }
-
         public Task<bool> IsStillValidByTokenIdAsync(Guid tokenId, CancellationToken cancellationToken)
         {
             var dateTimeNow = DateTime.Now;

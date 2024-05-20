@@ -50,7 +50,7 @@ namespace BusinessLogic.Services.Core.Base
         ///     This token will encapsulte some claims, including: Jti, UserId.
         ///     <br/><br/>
         ///     The life span of this token will be configured through 
-        ///     the <see cref="Options.Models.Jwts.UserAccount.RegisterConfirmationTokenOptions"/>         
+        ///     the <see cref="Options.Models.Jwts.SystemAccount.RegisterConfirmationTokenOptions"/>         
         ///     in appsettings.json file.
         /// </remarks>
         /// <param name="user"></param>
@@ -70,7 +70,7 @@ namespace BusinessLogic.Services.Core.Base
         ///     This token will encapsulte some claims, including: Jti, UserId.
         ///     <br/><br/>
         ///     The life span of this token will be configured through 
-        ///     the <see cref="Options.Models.Jwts.UserAccount.ResetPasswordTokenOptions"/>         
+        ///     the <see cref="Options.Models.Jwts.SystemAccount.ResetPasswordTokenOptions"/>         
         ///     in appsettings.json file.
         /// </remarks>
         /// <param name="user"></param>
@@ -84,7 +84,8 @@ namespace BusinessLogic.Services.Core.Base
 
         /// <summary>
         ///     Create a new <see cref="UserTokenEntity"/> instance from 
-        ///     the provided credentials
+        ///     the provided credentials. Any DateTime value will store
+        ///     with <see cref="DateTimeKind.Utc"/>.
         /// </summary>
         /// <param name="tokenId">
         ///     The tokenId of this token instance.

@@ -1,4 +1,5 @@
-﻿using BusinessLogic.Services.Core.Base;
+﻿using BusinessLogic.Models;
+using BusinessLogic.Services.Core.Base;
 using DataAccess.DataSeedings;
 using DataAccess.DbContexts;
 using DataAccess.Entities;
@@ -80,20 +81,47 @@ namespace BusinessLogic.Services.Core.Implemetation
                 {
                     await _unitOfWork.CreateTransactionAsync(cancellationToken);
 
-                    var foundUser = await _unitOfWork.UserRepository.Manager.FindByIdAsync(
-                        userId: userProfile.Id.ToString());
+                    await _unitOfWork.UserRepository.BulkUpdateUserProfileAsync(
+                        userToUpdate: userProfile,
+                        cancellationToken: cancellationToken);
 
-                    foundUser.FullName = userProfile.FullName;
-                    foundUser.PhoneNumber = userProfile.PhoneNumber;
+                    await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-                    if (!Equals(userProfile.AvatarUrl, null))
-                    {
-                        foundUser.AvatarUrl = userProfile.AvatarUrl;
-                    }
+                    result = true;
+                }
+                catch (Exception)
+                {
+                    await _unitOfWork.RollBackTransactionAsync(cancellationToken);
+                }
+                finally
+                {
+                    await _unitOfWork.DisposeTransactionAsync(cancellationToken);
+                }
+            });
 
-                    foundUser.UpdatedAt = DateTime.Now;
+            return result;
+        }
 
-                    await _unitOfWork.UserRepository.UpdateAsync(foundEntity: foundUser);
+        public async Task<bool> UpdateUserPasswordAsync(
+            UserEntity foundUser,
+            string newPassword,
+            CancellationToken cancellationToken)
+        {
+            var result = false;
+
+            var executionStrategy = _unitOfWork.CreateExecutionStrategy();
+
+            await executionStrategy.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    await _unitOfWork.CreateTransactionAsync(cancellationToken);
+
+                    foundUser.UpdatedAt = DateTime.UtcNow;
+
+                    await _unitOfWork.UserRepository.Manager.RemovePasswordAsync(foundUser);
+
+                    await _unitOfWork.UserRepository.Manager.AddPasswordAsync(foundUser, newPassword);
 
                     await _unitOfWork.SaveChangesToDatabaseAsync(cancellationToken);
 
@@ -113,7 +141,7 @@ namespace BusinessLogic.Services.Core.Implemetation
 
             return result;
         }
-        
+
         public async Task<bool> UpdateUserPasswordAsyncByUserId(
             Guid userId,
             string newPassword,
@@ -130,10 +158,10 @@ namespace BusinessLogic.Services.Core.Implemetation
                     await _unitOfWork.CreateTransactionAsync(cancellationToken);
 
                     var foundUser = await _unitOfWork.UserRepository.Manager.FindByIdAsync(userId: userId.ToString());
-                    
+
                     if (foundUser != null)
                     {
-                        foundUser.UpdatedAt = DateTime.Now;
+                        foundUser.UpdatedAt = DateTime.UtcNow;
 
                         await _unitOfWork.UserRepository.Manager.RemovePasswordAsync(foundUser);
 
@@ -157,6 +185,62 @@ namespace BusinessLogic.Services.Core.Implemetation
             });
 
             return result;
+        }
+
+        public async Task<bool> UpdateUserAvatarAsync(
+            UserEntity userToUpdate,
+            CancellationToken cancellationToken)
+        {
+            var result = false;
+
+            var executionStrategy = _unitOfWork.CreateExecutionStrategy();
+
+            await executionStrategy.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    await _unitOfWork.CreateTransactionAsync(cancellationToken);
+
+                    await _unitOfWork.UserRepository.BulkUpdateUserAvatarAsync(
+                        userToUpdate: userToUpdate,
+                        cancellationToken: cancellationToken);
+
+                    await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+                    result = true;
+                }
+                catch (Exception)
+                {
+                    await _unitOfWork.RollBackTransactionAsync(cancellationToken);
+                }
+                finally
+                {
+                    await _unitOfWork.DisposeTransactionAsync(cancellationToken);
+                }
+            });
+
+            return result;
+        }
+
+        public async Task<AppResult<UserEntity>> CheckPasswordByUserIdAsync(
+            Guid userId,
+            string password)
+        {
+            var foundUser = await _unitOfWork.UserRepository.FindByIdAsync(userId);
+
+            if (Equals(foundUser, null))
+            {
+                return AppResult<UserEntity>.Failed($"User with Id [{userId}] is not found.");
+            }
+
+            var isSamePassword = await _unitOfWork.UserRepository.Manager.CheckPasswordAsync(foundUser, password);
+
+            if (isSamePassword)
+            {
+                return AppResult<UserEntity>.Success(foundUser);
+            }
+
+            return AppResult<UserEntity>.Failed("Old password is not correct.");
         }
     }
 }

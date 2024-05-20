@@ -12,5 +12,26 @@ namespace DataAccess.Repositories.Base
         Task<UserEntity> FindUserByIdForProfileDisplayAsync(
             Guid userId,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        ///     Bulk update the specified user's profile
+        ///     from the input user new credentials.
+        /// </summary>
+        /// <param name="userToUpdate">
+        ///     The new credentials of the target user
+        ///     that need to be updated.
+        /// </param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<int> BulkUpdateUserProfileAsync(
+            UserEntity userToUpdate,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        ///     Bulk update the specified user's avatar.
+        /// </summary>
+        Task<int> BulkUpdateUserAvatarAsync(
+            UserEntity userToUpdate,
+            CancellationToken cancellationToken);
     }
 }

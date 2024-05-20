@@ -18,6 +18,7 @@ namespace DataAccess.Repositories.Implementation
             CancellationToken cancellationToken)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Where(product => product.CategoryId == categoryId)
                 .Select(product => new ProductEntity
                 {
@@ -43,11 +44,28 @@ namespace DataAccess.Repositories.Implementation
                 .ToListAsync(cancellationToken: cancellationToken);
         }
 
+        public Task<ProductEntity> FindByIdForAddingToCartAsync(
+            Guid productId,
+            CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .AsNoTracking()
+                .Where(product => product.Id == productId)
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
+                    QuantityInStock = product.QuantityInStock,
+                    ProductStatusId = product.ProductStatusId
+                })
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        }
+
         public Task<ProductEntity> FindByIdForDetailDisplayAsync(
             Guid productId,
             CancellationToken cancellationToken)
         {
             return _dbSet
+                .AsNoTracking()
                 .Where(product => product.Id == productId)
                 .Select(product => new ProductEntity
                 {
@@ -57,6 +75,32 @@ namespace DataAccess.Repositories.Implementation
                         Id = product.Category.Id,
                         Name = product.Category.Name
                     },
+                    Name = product.Name,
+                    Description = product.Description,
+                    ProductStatus = new ProductStatusEntity
+                    {
+                        Name = product.ProductStatus.Name
+                    },
+                    UnitPrice = product.UnitPrice,
+                    QuantityInStock = product.QuantityInStock,
+                    ProductImages = product.ProductImages.Select(image => new ProductImageEntity
+                    {
+                        StorageUrl = image.StorageUrl,
+                    })
+                })
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        }
+
+        public Task<ProductEntity> FindByIdForShoppingCartDisplayAsync(
+            Guid productId,
+            CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .AsNoTracking()
+                .Where(product => product.Id == productId)
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
                     Name = product.Name,
                     Description = product.Description,
                     ProductStatus = new ProductStatusEntity

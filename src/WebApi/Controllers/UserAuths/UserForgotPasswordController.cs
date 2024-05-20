@@ -2,9 +2,11 @@
 using BusinessLogic.Services.External.Base;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using WebApi.DTOs.Implementation.SystemAccountAuths.Incomings;
 using WebApi.DTOs.Implementation.UserAuths.Incomings;
 using WebApi.DTOs.Implementation.UserAuths.Outgoings;
 using WebApi.Models;
+using WebApi.Shared.AppConstants;
 
 namespace WebApi.Controllers.UserAuths
 {
@@ -36,6 +38,15 @@ namespace WebApi.Controllers.UserAuths
             [Required] string email,
             CancellationToken cancellationToken)
         {
+            var isEmailConfirmed = await _userService.CheckRegistrationConfirmationByEmailAsync(
+                email: email,
+                cancellationToken: cancellationToken);
+
+            if (!isEmailConfirmed)
+            {
+                return BadRequest(ApiResponse.Failed($"Account with email [{email}] has not confirmed."));
+            }
+
             var foundUser = await _userService.FindUserByEmailAsync(email: email);
 
             if (Equals(foundUser, null))
@@ -67,9 +78,9 @@ namespace WebApi.Controllers.UserAuths
 
             var mailTemplatePath = Path.Combine(
                 path1: _webHostEnvironment.ContentRootPath,
-                path2: "Others",
-                path3: "MailTemplate",
-                path4: "register_confirm.html");
+                path2: AppFolders.Others,
+                path3: AppFolders.MailTemplate,
+                path4: AppFiles.ResetPasswordMailTemplateFile);
 
             var mailContent = await _mailService.BuildRegisterConfirmMailContentAsync(
                 templatePath: mailTemplatePath,
@@ -102,7 +113,7 @@ namespace WebApi.Controllers.UserAuths
                 return BadRequest(ApiResponse.Failed(validationResult.ErrorMessages));
             }
 
-            return Ok(ApiResponse.Success(new UserResetPasswordResponseDto
+            return Ok(ApiResponse.Success(new ResetPasswordResponseDto
             {
                 ResetPasswordToken = resetPasswordToken
             }));

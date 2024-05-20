@@ -10,6 +10,8 @@
 
         public string LastName { get; set; }
 
+        public bool Gender { get; set; }
+
         public string Email { get; set; }
 
         public string PhoneNumber { get; set; }

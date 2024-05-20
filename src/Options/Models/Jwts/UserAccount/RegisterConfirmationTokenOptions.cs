@@ -10,7 +10,8 @@ namespace Options.Models.Jwts.UserAccount
             configuration
                 .GetRequiredSection(AppSettingsSections.Area.UserAccount)
                 .GetRequiredSection(AppSettingsSections.SubArea.Authentication)
-                .Bind(SectionName);
+                .GetRequiredSection(SectionName)
+                .Bind(this);
         }
     }
 }

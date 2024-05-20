@@ -1,6 +1,6 @@
 ﻿namespace WebApi.DTOs.Implementation.UserAuths.Outgoings
 {
-    public class UserLoginResponseDto
+    public class LoginResponseDto
     {
         public string AccessToken { get; set; }
 

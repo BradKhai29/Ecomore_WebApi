@@ -2,7 +2,7 @@
 
 namespace BusinessLogic.Services.Core.Base
 {
-    public interface IAdminProductService
+    public interface ISystemAccountProductService
     {
         Task<IEnumerable<ProductEntity>> GetAllProductsAsync(CancellationToken cancellationToken);
     }

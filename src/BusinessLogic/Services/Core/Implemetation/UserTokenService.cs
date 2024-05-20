@@ -390,31 +390,35 @@ namespace BusinessLogic.Services.Core.Implemetation
             UserEntity user,
             TokenPurpose tokenPurpose)
         {
+            // Using Utc.Now for best accuracy to store in the database.
+            var dateTimeUtcNow = DateTime.UtcNow;
+
             var userToken = new UserTokenEntity
             {
                 Id = tokenId,
                 UserId = user.Id,
                 LoginProvider = _accessTokenOptions.Issuer,
-                Value = tokenId.ToString()
+                Value = tokenId.ToString(),
+                CreatedAt = dateTimeUtcNow,
             };
 
             switch (tokenPurpose)
             {
                 case TokenPurpose.RefreshToken:
                     userToken.Name = TokenNames.RefreshToken;
-                    userToken.ExpiredAt = DateTime.Now.AddDays(_refreshTokenOptions.LiveDays);
+                    userToken.ExpiredAt = dateTimeUtcNow.AddDays(_refreshTokenOptions.LiveDays);
 
                     break;
 
                 case TokenPurpose.RegisterConfirmationToken:
                     userToken.Name = TokenNames.RegisterConfirmationToken;
-                    userToken.ExpiredAt = DateTime.Now.AddMinutes(_registerConfirmationTokenOptions.LiveMinutes);
+                    userToken.ExpiredAt = dateTimeUtcNow.AddMinutes(_registerConfirmationTokenOptions.LiveMinutes);
 
                     break;
 
                 case TokenPurpose.ResetPasswordToken:
                     userToken.Name = TokenNames.ResetPasswordToken;
-                    userToken.ExpiredAt = DateTime.Now.AddMinutes(_registerConfirmationTokenOptions.LiveMinutes);
+                    userToken.ExpiredAt = dateTimeUtcNow.AddMinutes(_registerConfirmationTokenOptions.LiveMinutes);
 
                     break;
             }
