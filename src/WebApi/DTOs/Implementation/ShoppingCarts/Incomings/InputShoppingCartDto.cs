@@ -71,7 +71,7 @@ namespace WebApi.DTOs.Implementation.ShoppingCarts.Incomings
                 return Enumerable.Empty<Guid>();
             }
 
-            return CartItems.Select(x => x.ProductId);
+            return CartItems.Select(x => x.ProductId).ToList();
         }
 
         public void RemoveItem(Guid productId)

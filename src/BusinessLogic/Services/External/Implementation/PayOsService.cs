@@ -95,9 +95,9 @@ namespace BusinessLogic.Services.Externals.Implementation
 
                 return AppResult<CreatePaymentResult>.Success(result);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return AppResult<CreatePaymentResult>.Failed();
+                return AppResult<CreatePaymentResult>.Failed(ex.Message);
             }
         }
 

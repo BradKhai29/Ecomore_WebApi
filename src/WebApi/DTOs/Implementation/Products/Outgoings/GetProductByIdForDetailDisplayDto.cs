@@ -18,6 +18,8 @@ namespace WebApi.DTOs.Implementation.Products.Outgoings
 
         public int QuantityInStock { get; set; }
 
+        public int SellingCount { get; set; }
+
         public IEnumerable<string> ImageUrls { get; set; }
     }
 }

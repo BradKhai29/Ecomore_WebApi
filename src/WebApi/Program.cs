@@ -1,5 +1,7 @@
 using BusinessLogic;
+using Presentation.Middlewares;
 using WebApi.DependencyInjection;
+using WebApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -13,10 +15,24 @@ services.AddBusinessLogic();
 
 #region Presentation Configuration
 services.AddOptionsConfiguration(configurationManager: configuration);
+services.AddMiddlewareConfiguration();
 services.AddAuthenticationConfiguration();
 services.AddAuthorizationConfiguration();
 services.AddWebApiConfiguration();
 services.AddSignalR();
+// Read more about custom exception handler: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-8.0
+services.AddExceptionHandler(options =>
+{
+    options.ExceptionHandler = async (context) =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        var response = ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError);
+
+        context.Response.Clear();
+        await context.Response.WriteAsJsonAsync(response);
+        await context.Response.CompleteAsync();
+    };
+});
 #endregion
 
 var app = builder.Build();
@@ -31,6 +47,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseMiddleware<GuestIdCookieMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

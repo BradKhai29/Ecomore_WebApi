@@ -58,6 +58,26 @@ namespace DataAccess.DataSeedings
                 return _values;
             }
         }
+
+        public static bool IsStatusExistedById(Guid statusId)
+        {
+            if (statusId == InStock.Id)
+            {
+                return true;
+            }
+
+            if (statusId == OutOfStock.Id)
+            {
+                return true;
+            }
+
+            if (statusId == NotAvailable.Id)
+            {
+                return true;
+            }
+
+            return false;
+        }
         #endregion
     }
 }

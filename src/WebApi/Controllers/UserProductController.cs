@@ -6,13 +6,13 @@ using WebApi.Models;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/product")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class UserProductController : ControllerBase
     {
         private readonly IUserProductService _productService;
 
-        public ProductController(IUserProductService userProductService)
+        public UserProductController(IUserProductService userProductService)
         {
             _productService = userProductService;
         }

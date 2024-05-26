@@ -20,5 +20,20 @@
 
             return formFile.FileName.Split(separator: ".").Last();
         }
+
+        public static IFormFile GetFormFileByName(
+            IEnumerable<IFormFile> formFiles,
+            string fileName)
+        {
+            foreach (IFormFile formFile in formFiles)
+            {
+                if (formFile.FileName.Equals(fileName))
+                {
+                    return formFile;
+                }
+            }
+
+            return null;
+        }
     }
 }

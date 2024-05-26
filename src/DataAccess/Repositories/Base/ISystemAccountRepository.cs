@@ -6,7 +6,9 @@ namespace DataAccess.Repositories.Base
     public interface ISystemAccountRepository :
         IGenericRepository<SystemAccountEntity>
     {
-        Task<SystemAccountEntity> FindByEmailForLoginAsync(string email, CancellationToken cancellationToken);
+        Task<SystemAccountEntity> FindByEmailForLoginAsync(
+            string email,
+            CancellationToken cancellationToken);
 
         Task<int> BulkUpdateSystemAccountForFailedAccessAsync(
             SystemAccountEntity systemAccountEntity,

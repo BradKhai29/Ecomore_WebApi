@@ -69,7 +69,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             var resetPasswordToken = _userTokenService.GenerateResetPasswordToken(

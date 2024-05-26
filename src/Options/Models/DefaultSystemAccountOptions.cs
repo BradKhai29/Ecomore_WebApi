@@ -8,8 +8,6 @@ namespace Options.Models
         private const string ParentSectionName = "Others";
         private const string SectionName = "DefaultSystemAccount";
 
-        public string UserName { get; set; }
-
         public string Email { get; set; }
 
         public string Password { get; set; }

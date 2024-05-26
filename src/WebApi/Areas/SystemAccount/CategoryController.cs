@@ -76,7 +76,7 @@ namespace WebApi.Areas.SystemAccount
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(default));
@@ -113,7 +113,7 @@ namespace WebApi.Areas.SystemAccount
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(default));
@@ -151,7 +151,7 @@ namespace WebApi.Areas.SystemAccount
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(default));

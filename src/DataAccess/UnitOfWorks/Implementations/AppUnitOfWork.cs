@@ -21,17 +21,21 @@ public class AppUnitOfWork<TContext> : IUnitOfWork<TContext>
 
     // Backing fields for implement UnitOfWork Repository Provider.
     private IProductRepository _productRepository;
+    private IProductImageRepository _productImageRepository;
+    private IProductStatusRepository _productStatusRepository;
     private ISystemAccountRepository _systemAccountRepository;
     private IAccountStatusRepository _accountStatusRepository;
     private IUserRepository _userRepository;
     private IRoleRepository _roleRepository;
     private ICategoryRepository _categoryRepository;
-    private IProductStatusRepository _productStatusRepository;
     private IOrderStatusRepository _orderStatusRepository;
     private IPaymentMethodRepository _paymentMethodRepository;
     private IUserTokenRepository _userTokenRepository;
     private ISystemAccountTokenRepository _systemAccountTokenRepository;
     private IHealthCheckRepository _healthCheckRepository;
+    private IOrderRepository _orderRepository;
+    private IOrderItemRepository _orderItemRepository;
+    private IOrderGuestDetailRepository _orderGuestDetailRepository;
 
     // Properties.
     public IProductRepository ProductRepository
@@ -41,6 +45,16 @@ public class AppUnitOfWork<TContext> : IUnitOfWork<TContext>
             _productRepository ??= new ProductRepository(_dbContext);
 
             return _productRepository;
+        }
+    }
+
+    public IProductImageRepository ProductImageRepository
+    {
+        get
+        {
+            _productImageRepository ??= new ProductImageRepository(_dbContext);
+
+            return _productImageRepository;
         }
     }
 
@@ -101,6 +115,36 @@ public class AppUnitOfWork<TContext> : IUnitOfWork<TContext>
             _productStatusRepository ??= new ProductStatusRepository(_dbContext);
 
             return _productStatusRepository;
+        }
+    }
+
+    public IOrderRepository OrderRepository
+    {
+        get
+        {
+            _orderRepository ??= new OrderRepository(_dbContext);
+
+            return _orderRepository;
+        }
+    }
+
+    public IOrderItemRepository OrderItemRepository
+    {
+        get
+        {
+            _orderItemRepository ??= new OrderItemRepository(_dbContext);
+
+            return _orderItemRepository;
+        }
+    }
+
+    public IOrderGuestDetailRepository OrderGuestDetailRepository
+    {
+        get
+        {
+            _orderGuestDetailRepository ??= new OrderGuestDetailRepository(_dbContext);
+
+            return _orderGuestDetailRepository;
         }
     }
 

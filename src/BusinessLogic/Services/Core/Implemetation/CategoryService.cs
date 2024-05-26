@@ -122,7 +122,7 @@ namespace BusinessLogic.Services.Core.Implemetation
                     await _unitOfWork.CreateTransactionAsync(cancellationToken);
 
                     await _unitOfWork.CategoryRepository.BulkUpdateAsync(
-                        categoryEntity: category,
+                        categoryToUpdate: category,
                         cancellationToken: cancellationToken);
 
                     await _unitOfWork.CommitTransactionAsync(cancellationToken);

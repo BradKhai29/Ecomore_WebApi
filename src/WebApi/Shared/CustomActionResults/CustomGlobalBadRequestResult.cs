@@ -8,18 +8,35 @@ namespace WebApi.Shared.CustomActionResults
     {
         public Task ExecuteResultAsync(ActionContext context)
         {
-            var errorMessages = context.ModelState.Values
-                .Select(modelStateEntry => modelStateEntry.Errors)
-                .Select(error => error.First().ErrorMessage);
+            var modelErrorCollection = context.ModelState.Values
+                .Select(modelStateEntry => modelStateEntry.Errors);
 
-            var apiResponse = ApiResponse.Failed(errorMessages);
-
-            var actionResult = new ObjectResult(apiResponse)
+            if (!Equals(modelErrorCollection, null))
             {
-                StatusCode = StatusCodes.Status400BadRequest
-            };
+                var errorMessages = new List<string>();
 
-            return actionResult.ExecuteResultAsync(context);
+                modelErrorCollection.ForEach(modelError =>
+                {
+                    modelError.ForEach(error =>
+                    {
+                        errorMessages.Add(error.ErrorMessage);
+                    });
+                });
+
+                errorMessages.TrimExcess();
+
+                var apiResponse = ApiResponse.Failed(errorMessages);
+
+                var actionResult = new ObjectResult(apiResponse)
+                {
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
+
+                return actionResult.ExecuteResultAsync(context);
+            }
+
+            return new BadRequestObjectResult(ApiResponse.Failed())
+                .ExecuteResultAsync(context);
         }
     }
 }

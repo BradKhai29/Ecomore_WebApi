@@ -27,14 +27,7 @@ namespace WebApi.Controllers
         public async Task<IActionResult> UploadAsync(
             IFormFile formFile)
         {
-            try
-            {
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            return Ok();
         }
     }
 }

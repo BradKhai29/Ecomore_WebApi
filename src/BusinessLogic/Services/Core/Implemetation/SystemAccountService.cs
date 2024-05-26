@@ -41,6 +41,17 @@ namespace BusinessLogic.Services.Core.Implemetation
                 cancellationToken: cancellationToken);
         }
 
+        public Task<bool> IsAccountAvailableByIdAsync(
+            Guid accountId,
+            CancellationToken cancellationToken)
+        {
+            return _unitOfWork.SystemAccountRepository.IsFoundByExpressionAsync(
+                findExpresison: account 
+                    => account.Id == accountId
+                    && account.AccountStatusId == AccountStatuses.EmailConfirmed.Id,
+                cancellationToken: cancellationToken);
+        }
+
         public async Task<bool> UpdatePasswordByAccountIdAsync(
             Guid systemAccountId,
             string newPassword,

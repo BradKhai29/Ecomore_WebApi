@@ -20,15 +20,15 @@ namespace DataAccess.Repositories.Implementation
                 .ExecuteDeleteAsync(cancellationToken: cancellationToken);
         }
 
-        public Task<int> BulkUpdateAsync(CategoryEntity categoryEntity, CancellationToken cancellationToken)
+        public Task<int> BulkUpdateAsync(CategoryEntity categoryToUpdate, CancellationToken cancellationToken)
         {
             return _dbSet
-                .Where(predicate: category => category.Id == categoryEntity.Id)
+                .Where(predicate: category => category.Id == categoryToUpdate.Id)
                 .ExecuteUpdateAsync(
                     setPropertyCalls: category => category
                         .SetProperty(
                             category => category.Name,
-                            category => categoryEntity.Name),
+                            category => categoryToUpdate.Name),
                     cancellationToken: cancellationToken);
         }
 

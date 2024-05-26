@@ -1,7 +1,9 @@
-﻿using BusinessLogic.Services.Core.Base;
+﻿using BusinessLogic.Services.Core;
+using BusinessLogic.Services.Core.Base;
 using BusinessLogic.Services.Core.Implemetation;
 using BusinessLogic.Services.External.Base;
 using BusinessLogic.Services.External.Implementation;
+using BusinessLogic.Services.Externals.Implementation;
 using DataAccess;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,9 +42,10 @@ namespace BusinessLogic
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserTokenService, UserTokenService>();
             services.AddScoped<IUserAuthService, UserAuthService>();
+            services.AddScoped<IUserOrderService, UserOrderService>();
 
             // System-Account (Admin) services section.
-            services.AddScoped<ISystemAccountAuthService, SystemAccountAuthService>();
+            services.AddScoped<ISystemAccountProductService, SystemAccountProductService>();
             services.AddScoped<ISystemAccountService, SystemAccountService>();
             services.AddScoped<ISystemAccountAuthService, SystemAccountAuthService>();
             services.AddScoped<ISystemAccountTokenService, SystemAccountTokenService>();
@@ -56,6 +59,7 @@ namespace BusinessLogic
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IMailService, GmailService>();
             services.AddScoped<IDistributedFileStorageService, CloudinaryService>();
+            services.AddScoped<IPayOsService, PayOsService>();
 
             return services;
         }

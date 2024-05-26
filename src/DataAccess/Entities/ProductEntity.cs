@@ -45,6 +45,8 @@ namespace DataAccess.Entities
         public static class MetaData
         {
             public const string TableName = "Products";
+
+            public const int MaxImages = 4;
         }
         #endregion
     }

@@ -92,7 +92,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                 statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             // Generate the register confirmation token.
@@ -114,7 +114,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             var mailTemplatePath = Path.Combine(
@@ -164,7 +164,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             await _userTokenService.RemoveUserTokenByIdAsync(
@@ -210,7 +210,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                 statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             // Generate the register confirmation token.
@@ -232,7 +232,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             var mailTemplatePath = Path.Combine(

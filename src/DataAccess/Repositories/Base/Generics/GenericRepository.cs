@@ -19,14 +19,18 @@ public abstract class GenericRepository<TEntity> : IGenericRepository<TEntity>
         TEntity newEntity,
         CancellationToken cancellationToken)
     {
-        return _dbSet.AddAsync(entity: newEntity, cancellationToken: cancellationToken);
+        return _dbSet.AddAsync(
+            entity: newEntity,
+            cancellationToken: cancellationToken);
     }
 
     public Task AddRangeAsync(
         IEnumerable<TEntity> newEntities,
         CancellationToken cancellationToken)
     {
-        return _dbSet.AddRangeAsync(entities: newEntities, cancellationToken: cancellationToken);
+        return _dbSet.AddRangeAsync(
+            entities: newEntities,
+            cancellationToken: cancellationToken);
     }
 
     public Task<bool> IsFoundByExpressionAsync(

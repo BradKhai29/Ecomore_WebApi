@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Options.Models.Jwts.SystemAccount;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using WebApi.Models;
 using WebApi.Shared.AppConstants;
 
 namespace WebApi.Shared.AuthenticationHandlers
@@ -39,6 +40,8 @@ namespace WebApi.Shared.AuthenticationHandlers
 
             if (!isValidHeader)
             {
+                await WriteUnauthorizedResponseAsync(Context);
+
                 return AuthenticateResult.Fail(failureMessage: $"Missing header: {JwtBearerDefaults.AuthenticationScheme}");
             }
 
@@ -51,6 +54,8 @@ namespace WebApi.Shared.AuthenticationHandlers
 
             if (!tokenValidationResult.IsValid)
             {
+                await WriteUnauthorizedResponseAsync(Context);
+
                 return AuthenticateResult.Fail(failureMessage: $"Invalid token.");
             }
 
@@ -60,6 +65,22 @@ namespace WebApi.Shared.AuthenticationHandlers
         }
 
         #region Private Methods
+        /// <summary>
+        ///  Reference: https://github.com/dotnet/aspnetcore/issues/44100
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
+        private async Task WriteUnauthorizedResponseAsync(HttpContext httpContext)
+        {
+            var unauthorizedResponse = ApiResponse.Failed(
+                errorMessages: ApiResponse.DefaultMessage.InvalidAccessToken);
+
+            httpContext.Response.Clear();
+            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await httpContext.Response.WriteAsJsonAsync(unauthorizedResponse);
+            await httpContext.Response.CompleteAsync();
+        }
+
         private bool VerifyAuthorizationHeader(string authorizationHeader)
         {
             var isNotEmpty = !string.IsNullOrEmpty(authorizationHeader);

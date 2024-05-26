@@ -13,6 +13,52 @@ namespace DataAccess.Repositories.Implementation
         {
         }
 
+        public Task<int> BulkDeleteByIdAsync(
+            Guid productId,
+            CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .Where(product => product.Id == productId)
+                .ExecuteDeleteAsync(cancellationToken: cancellationToken);
+        }
+
+        public Task<int> BulkUpdateProductDetailAsync(
+            ProductEntity productToUpdate,
+            CancellationToken cancellationToken)
+        {
+            var updateDateTime = productToUpdate.UpdatedAt;
+
+            return _dbSet
+                .Where(predicate: product => product.Id == productToUpdate.Id)
+                .ExecuteUpdateAsync(
+                    setPropertyCalls: product => product
+                        .SetProperty(
+                            product => product.Name,
+                            product => productToUpdate.Name)
+                        .SetProperty(
+                            product => product.ProductStatusId,
+                            product => productToUpdate.ProductStatusId)
+                        .SetProperty(
+                            product => product.CategoryId,
+                            product => productToUpdate.CategoryId)
+                        .SetProperty(
+                            product => product.Description,
+                            product => productToUpdate.Description)
+                        .SetProperty(
+                            product => product.UnitPrice,
+                            product => productToUpdate.UnitPrice)
+                        .SetProperty(
+                            product => product.QuantityInStock,
+                            product => productToUpdate.QuantityInStock)
+                        .SetProperty(
+                            product => product.UpdatedBy,
+                            product => productToUpdate.UpdatedBy)
+                        .SetProperty(
+                            product => product.UpdatedAt,
+                            product => updateDateTime),
+                    cancellationToken: cancellationToken);
+        }
+
         public async Task<IEnumerable<ProductEntity>> FindAllProductsByCategoryIdAsync(
             Guid categoryId,
             CancellationToken cancellationToken)
@@ -83,6 +129,8 @@ namespace DataAccess.Repositories.Implementation
                     },
                     UnitPrice = product.UnitPrice,
                     QuantityInStock = product.QuantityInStock,
+                    CreatedAt = product.CreatedAt,
+                    SellingCount = product.SellingCount,
                     ProductImages = product.ProductImages.Select(image => new ProductImageEntity
                     {
                         StorageUrl = image.StorageUrl,
@@ -103,14 +151,47 @@ namespace DataAccess.Repositories.Implementation
                     Id = product.Id,
                     Name = product.Name,
                     Description = product.Description,
-                    ProductStatus = new ProductStatusEntity
-                    {
-                        Name = product.ProductStatus.Name
-                    },
+                    ProductStatusId = product.ProductStatusId,
                     UnitPrice = product.UnitPrice,
                     QuantityInStock = product.QuantityInStock,
                     ProductImages = product.ProductImages.Select(image => new ProductImageEntity
                     {
+                        StorageUrl = image.StorageUrl,
+                    })
+                })
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        }
+
+        public Task<ProductEntity> FindByIdForUpdateAsync(
+            Guid productId,
+            CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .AsNoTracking()
+                .Where(product => product.Id == productId)
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
+                    Category = new CategoryEntity
+                    {
+                        Id = product.Category.Id,
+                        Name = product.Category.Name
+                    },
+                    Name = product.Name,
+                    Description = product.Description,
+                    ProductStatus = new ProductStatusEntity
+                    {
+                        Id = product.ProductStatus.Id,
+                        Name = product.ProductStatus.Name
+                    },
+                    UnitPrice = product.UnitPrice,
+                    QuantityInStock = product.QuantityInStock,
+                    CreatedAt = product.CreatedAt,
+                    SellingCount = product.SellingCount,
+                    ProductImages = product.ProductImages.Select(image => new ProductImageEntity
+                    {
+                        Id = image.Id,
+                        UploadOrder = image.UploadOrder,
                         StorageUrl = image.StorageUrl,
                     })
                 })

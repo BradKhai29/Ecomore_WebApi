@@ -64,9 +64,9 @@
 
         public static class DefaultMessage
         {
-            public const string DatabaseError = "Something wrong happen with database operation.";
+            public const string ServerError = "Something wrong happened with the server.";
 
-            public const string ServiceError = "Something wrong happen with the service.";
+            public const string ServiceError = "Something wrong happened with the service.";
             
             public const string FailedToSendEmail = "Fail to send email.";
 

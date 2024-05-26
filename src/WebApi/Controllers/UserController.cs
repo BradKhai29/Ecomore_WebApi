@@ -115,7 +115,7 @@ namespace WebApi.Controllers
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(default));
@@ -180,7 +180,7 @@ namespace WebApi.Controllers
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(new UserAvatarDto
@@ -251,7 +251,7 @@ namespace WebApi.Controllers
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(default));

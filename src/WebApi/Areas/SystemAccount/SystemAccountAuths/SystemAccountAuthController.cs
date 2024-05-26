@@ -1,4 +1,6 @@
-﻿using BusinessLogic.Services.Core.Base;
+﻿using BusinessLogic.Models;
+using BusinessLogic.Services.Core.Base;
+using DataAccess.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.DTOs.Implementation.SystemAccountAuths.Incomings;
@@ -79,7 +81,7 @@ namespace WebApi.Areas.SystemAccount.SystemAccountAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             // Generate the access token and refresh token for user.
@@ -130,7 +132,7 @@ namespace WebApi.Areas.SystemAccount.SystemAccountAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             return Ok(ApiResponse.Success(default));

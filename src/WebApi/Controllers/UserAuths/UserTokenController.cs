@@ -81,7 +81,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             var foundUser = await _userService.FindUserByIdForProfileDisplayAsync(
@@ -104,7 +104,7 @@ namespace WebApi.Controllers.UserAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             // Generate the access token and refresh token for user.

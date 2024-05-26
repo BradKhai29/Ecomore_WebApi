@@ -3,7 +3,8 @@ using DataAccess.Repositories.Base.Generics;
 
 namespace DataAccess.Repositories.Base
 {
-    public interface IProductRepository : IGenericRepository<ProductEntity>
+    public interface IProductRepository : 
+        IGenericRepository<ProductEntity>
     {
         /// <summary>
         ///     Get all products from the database without any pagination method.
@@ -18,8 +19,8 @@ namespace DataAccess.Repositories.Base
         ///     Find the product with the input productId.
         /// </summary>
         /// <remarks>
-        ///     This operation will include AsNoTracking() method to avoid unecessary
-        ///     tracking overhead.
+        ///     This operation will include AsNoTracking() method 
+        ///     to avoid unnecessary tracking overhead.
         /// </remarks>
         /// <param name="productId"></param>
         /// <param name="cancellationToken"></param>
@@ -38,6 +39,29 @@ namespace DataAccess.Repositories.Base
 
         Task<IEnumerable<ProductEntity>> FindAllProductsByCategoryIdAsync(
             Guid categoryId,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        ///     Find the specified product by the input <paramref name="productId"/>
+        ///     to display the information for updating operation.
+        /// </summary>
+        /// <remarks>
+        ///     This operation will include AsNoTracking() method 
+        ///     to avoid unnecessary tracking overhead.
+        /// </remarks>
+        /// <param name="productId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<ProductEntity> FindByIdForUpdateAsync(
+            Guid productId,
+            CancellationToken cancellationToken);
+
+        Task<int> BulkUpdateProductDetailAsync(
+            ProductEntity productToUpdate,
+            CancellationToken cancellationToken);
+
+        Task<int> BulkDeleteByIdAsync(
+            Guid productId,
             CancellationToken cancellationToken);
     }
 }

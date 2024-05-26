@@ -17,8 +17,15 @@ namespace WebApi.DependencyInjection
             {
                 var connectionString = configurationManager.GetConnectionString(LocalSectionName);
 
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(
+                    connectionString: connectionString,
+                    sqlServerOptionsAction: providerOptions =>
+                    {
+                        // Reference: https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency#custom-execution-strategy
+                        providerOptions.EnableRetryOnFailure(maxRetryCount: 3);
+                    });
                 options.UseLoggerFactory(GetLoggerFactory());
+
             });
 
             return services;

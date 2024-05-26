@@ -61,7 +61,7 @@ namespace WebApi.Areas.SystemAccount.SystemAccountAuths
             {
                 return StatusCode(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.DatabaseError));
+                    value: ApiResponse.Failed(ApiResponse.DefaultMessage.ServerError));
             }
 
             var resetPasswordToken = _systemAccountTokenService.GenerateResetPasswordToken(
