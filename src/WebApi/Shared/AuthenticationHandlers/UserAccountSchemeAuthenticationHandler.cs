@@ -75,10 +75,13 @@ namespace WebApi.Shared.AuthenticationHandlers
             var unauthorizedResponse = ApiResponse.Failed(
                 errorMessages: ApiResponse.DefaultMessage.InvalidAccessToken);
 
-            httpContext.Response.Clear();
-            httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await httpContext.Response.WriteAsJsonAsync(unauthorizedResponse);
-            await httpContext.Response.CompleteAsync();
+            if (!httpContext.Response.HasStarted)
+            {
+                httpContext.Response.Clear();
+                httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await httpContext.Response.WriteAsJsonAsync(unauthorizedResponse);
+                await httpContext.Response.CompleteAsync();
+            }
         }
 
         private bool VerifyAuthorizationHeader(string authorizationHeader)

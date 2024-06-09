@@ -12,18 +12,6 @@ namespace DataAccess.DbContexts
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
 
-        //public AppDbContext()
-        //{
-        //}
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    // Below comment for migrations purpose.
-        //    var connectionString = "Data Source=localhost;Initial Catalog=Ecomore_DB;User ID=sa;Password=123123;Trust Server Certificate=True";
-        //    optionsBuilder.UseSqlServer(connectionString);
-        //    optionsBuilder.UseLoggerFactory(GetLoggerFactory());
-        //}
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ApplyEntityConfiguration(modelBuilder);
@@ -55,18 +43,6 @@ namespace DataAccess.DbContexts
                         entityType.SetTableName(name: $"{tableName[index..]}");
                     }
                 });
-        }
-
-        private static ILoggerFactory GetLoggerFactory()
-        {
-            IServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging(builder =>
-                builder
-                    .AddConsole()
-                    .AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information)
-            );
-
-            return serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
         }
     }
 }

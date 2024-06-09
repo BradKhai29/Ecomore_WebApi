@@ -15,17 +15,15 @@ namespace WebApi.DependencyInjection
         {
             services.AddDbContextPool<AppDbContext>(optionsAction: options =>
             {
-                var connectionString = configurationManager.GetConnectionString(LocalSectionName);
+                var connectionString = configurationManager.GetConnectionString(RemoteSectionName);
 
-                options.UseSqlServer(
+                options.UseNpgsql(
                     connectionString: connectionString,
-                    sqlServerOptionsAction: providerOptions =>
+                    npgsqlOptionsAction: providerOptions =>
                     {
                         // Reference: https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency#custom-execution-strategy
                         providerOptions.EnableRetryOnFailure(maxRetryCount: 3);
                     });
-                options.UseLoggerFactory(GetLoggerFactory());
-
             });
 
             return services;

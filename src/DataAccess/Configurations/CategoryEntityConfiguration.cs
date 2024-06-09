@@ -22,6 +22,11 @@ namespace DataAccess.Configurations
             builder.HasIndex(category => category.Name).IsUnique();
 
             builder
+                .Property(category => category.ImageUrl)
+                .HasColumnType(SqlDataTypes.SqlServer.NVARCHAR_200)
+                .IsRequired();
+
+            builder
                 .Property(category => category.CreatedAt)
                 .HasColumnType(SqlDataTypes.SqlServer.DATETIME);
 

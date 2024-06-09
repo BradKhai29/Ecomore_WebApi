@@ -38,6 +38,7 @@ namespace BusinessLogic.Services.Core.Implemetation
                 return false;
             }
 
+            var result = false;
             var executionStrategy = _unitOfWork.CreateExecutionStrategy();
 
             await executionStrategy.ExecuteAsync(async () =>
@@ -60,6 +61,7 @@ namespace BusinessLogic.Services.Core.Implemetation
                     await _unitOfWork.SaveChangesToDatabaseAsync(cancellationToken: cancellationToken);
 
                     await _unitOfWork.CommitTransactionAsync(cancellationToken: cancellationToken);
+                    result = true;
                 }
                 catch (Exception)
                 {
@@ -71,7 +73,7 @@ namespace BusinessLogic.Services.Core.Implemetation
                 }          
             });
 
-            return true;
+            return result;
         }
 
         #region Private Methods
@@ -140,16 +142,7 @@ namespace BusinessLogic.Services.Core.Implemetation
 
         private async Task AddCategoriesAsync(CancellationToken cancellationToken)
         {
-            var categories = new List<CategoryEntity>
-            {
-                new()
-                {
-                    Id = Categories.ProcessedNut.Id,
-                    Name = Categories.ProcessedNut.Name,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = DefaultValues.SystemId
-                }
-            };
+            var categories = Categories.GetValues();
 
             await _unitOfWork.CategoryRepository.AddRangeAsync(categories, cancellationToken);
         }
@@ -165,41 +158,216 @@ namespace BusinessLogic.Services.Core.Implemetation
 
         private async Task AddProductsAsync(CancellationToken cancellationToken)
         {
-            var categoryId = Categories.ProcessedNut.Id;
-            var products = new List<ProductEntity>();
-
-            for (int i = 1; i <= 4; i++)
+            var products = new List<ProductEntity>(8);
+            
+            var product1 = new ProductEntity
             {
-                ProductEntity product =
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        CategoryId = categoryId,
-                        Name = $"Hat dinh duong [{i}]",
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedBy = DefaultValues.SystemId,
-                        ProductStatusId = ProductStatuses.InStock.Id,
-                        Description = "San pham ngon",
-                        QuantityInStock = 100,
-                        UnitPrice = 10_000,
-                        UpdatedAt = DateTime.UtcNow,
-                        UpdatedBy = DefaultValues.SystemId
-                    };
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.Nut.Id,
+                Name = "Hạt mắc ca",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 180_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product1.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product1.Id,
+                    FileName = $"{product1.Id}.jpg",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942803/Ecomore/Products/macca_rgf3ms.jpg",
+                }
+            };
 
-                ProductImageEntity productImage =
-                    new()
-                    {
-                        Id = Guid.NewGuid(),
-                        ProductId = product.Id,
-                        FileName = $"hat_dinh_duong_{i}.jpg",
-                        StorageUrl =
-                            "https://nangmo.vn/wp-content/uploads/2021/04/mix-hat-dinh-duong-4.jpg"
-                    };
+            var product2 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.Nut.Id,
+                Name = "Hạt hạnh nhân",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 160_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product2.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product2.Id,
+                    FileName = $"hat_{product2.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942791/Ecomore/Products/almond_ga5kb5.jpg",
+                }
+            };
 
-                product.ProductImages = new List<ProductImageEntity>() { productImage };
+            var product3 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.ProcessedNut.Id,
+                Name = "Hạt óc chó sấy",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 160_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product3.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product3.Id,
+                    FileName = $"hat_{product3.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942793/Ecomore/Products/wallnut_f8j3qw.jpg",
+                }
+            };
 
-                products.Add(product);
-            }
+            var product4 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.ProcessedNut.Id,
+                Name = "Hạt điều rang muối",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 200_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product4.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product4.Id,
+                    FileName = $"hat_{product4.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942793/Ecomore/Products/cashew_oqw6ur.jpg",
+                }
+            };
+
+            var product5 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.NutMilk.Id,
+                Name = "Sữa hạt hạnh nhân",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 25_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product5.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product5.Id,
+                    FileName = $"hat_{product5.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942802/Ecomore/Products/almond_milk_nbahg7.jpg",
+                }
+            };
+
+            var product6 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.NutMilk.Id,
+                Name = "Sữa hạt mắc ca",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 25_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product6.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product6.Id,
+                    FileName = $"hat_{product6.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942791/Ecomore/Products/macadamia_milk_lkwns6.jpg",
+                }
+            };
+
+            var product7 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.NutMilk.Id,
+                Name = "Sữa hạt óc chó",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 25_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product7.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product7.Id,
+                    FileName = $"hat_{product7.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942794/Ecomore/Products/walnut_milk_o2ehur.jpg",
+                }
+            };
+
+            var product8 = new ProductEntity
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = Categories.NutMilk.Id,
+                Name = "Sữa hạt điều",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = DefaultValues.SystemId,
+                ProductStatusId = ProductStatuses.InStock.Id,
+                Description = "Sản phẩm ngon",
+                QuantityInStock = 100,
+                UnitPrice = 25_000,
+                UpdatedAt = DateTime.UtcNow,
+                UpdatedBy = DefaultValues.SystemId,
+            };
+            product8.ProductImages = new List<ProductImageEntity>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = product8.Id,
+                    FileName = $"hat_{product1.Id}",
+                    StorageUrl = "https://res.cloudinary.com/dsjsmbdpw/image/upload/v1717942791/Ecomore/Products/cashew_milk_bkvoa1.jpg",
+                }
+            };
+
+            products.Add(product1);
+            products.Add(product2);
+            products.Add(product3);
+            products.Add(product4);
+            products.Add(product5);
+            products.Add(product6);
+            products.Add(product7);
+            products.Add(product8);
 
             await _unitOfWork.ProductRepository.AddRangeAsync(products, cancellationToken);
         }
