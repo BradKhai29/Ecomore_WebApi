@@ -12,12 +12,12 @@ namespace WebApi.DependencyInjection
     {
         private static IServiceCollection AddAppOptions<TAppOptions>(
             this IServiceCollection services,
-            ConfigurationManager configurationManager
+            IConfiguration configuration
         )
             where TAppOptions : AppOptions, new()
         {
             TAppOptions appOptions = new();
-            appOptions.Bind(configuration: configurationManager);
+            appOptions.Bind(configuration: configuration);
 
             services.AddSingleton(implementationInstance: appOptions);
 
@@ -26,28 +26,31 @@ namespace WebApi.DependencyInjection
 
         public static IServiceCollection AddOptionsConfiguration(
             this IServiceCollection services,
-            ConfigurationManager configurationManager)
+            IConfiguration configuration)
         {
             #region SystemAccount JwtTokenOptions.
-            services.AddAppOptions<Options.Models.Jwts.SystemAccount.AccessTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.Jwts.SystemAccount.RefreshTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.Jwts.SystemAccount.ResetPasswordTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.Jwts.SystemAccount.RegisterConfirmationTokenOptions>(configurationManager);
-            services.AddAppOptions<SystemAccountLoginConstraintsOptions>(configurationManager);
-            services.AddAppOptions<PasswordHashOptions>(configurationManager);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.AccessTokenOptions>(configuration);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.RefreshTokenOptions>(configuration);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.ResetPasswordTokenOptions>(configuration);
+            services.AddAppOptions<Options.Models.Jwts.SystemAccount.RegisterConfirmationTokenOptions>(configuration);
+            services.AddAppOptions<SystemAccountLoginConstraintsOptions>(configuration);
+            services.AddAppOptions<PasswordHashOptions>(configuration);
             #endregion
 
             #region UserAccount JwtTokenOptions.
-            services.AddAppOptions<Options.Models.Jwts.UserAccount.AccessTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.Jwts.UserAccount.RefreshTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.Jwts.UserAccount.RegisterConfirmationTokenOptions>(configurationManager);
-            services.AddAppOptions<Options.Models.Jwts.UserAccount.ResetPasswordTokenOptions>(configurationManager);
+            services.AddAppOptions<Options.Models.Jwts.UserAccount.AccessTokenOptions>(configuration);
+            services.AddAppOptions<Options.Models.Jwts.UserAccount.RefreshTokenOptions>(configuration);
+            services.AddAppOptions<Options.Models.Jwts.UserAccount.RegisterConfirmationTokenOptions>(configuration);
+            services.AddAppOptions<Options.Models.Jwts.UserAccount.ResetPasswordTokenOptions>(configuration);
             #endregion
 
-            services.AddAppOptions<MailOptions>(configurationManager);
-            services.AddAppOptions<PayOsOptions>(configurationManager);
-            services.AddAppOptions<DefaultSystemAccountOptions>(configurationManager);
-            services.AddAppOptions<CloudinaryOptions>(configurationManager);
+            #region Others
+            services.AddAppOptions<MailOptions>(configuration);
+            services.AddAppOptions<PayOsOptions>(configuration);
+            services.AddAppOptions<DefaultSystemAccountOptions>(configuration);
+            services.AddAppOptions<CloudinaryOptions>(configuration);
+            services.AddAppOptions<ProtectionOptions>(configuration);
+            #endregion
 
             return services;
         }

@@ -242,5 +242,14 @@ namespace BusinessLogic.Services.Core.Implemetation
 
             return AppResult<UserEntity>.Failed("Old password is not correct.");
         }
+
+        public Task<UserEntity> FindUserByIdForVerificationAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return _unitOfWork.UserRepository.FindUserByIdForVerificationAsync(
+                userId: userId,
+                cancellationToken: cancellationToken);
+        }
     }
 }

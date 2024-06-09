@@ -7,6 +7,8 @@
         /// </summary>
         public Guid ProductId { get; set; }
 
+        public string ProductName { get; set; }
+
         /// <summary>
         ///     The selling quantity of this order item.
         /// </summary>
@@ -23,5 +25,7 @@
         ///     in price during the time customer purchase their order.
         /// </remarks>
         public decimal SellingPrice { get; set; }
+
+        public decimal SubTotal => SellingPrice * SellingQuantity;
     }
 }

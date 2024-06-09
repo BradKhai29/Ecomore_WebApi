@@ -25,6 +25,10 @@ namespace BusinessLogic.Services.Core.Base
             Guid userId,
             CancellationToken cancellationToken);
 
+        Task<UserEntity> FindUserByIdForVerificationAsync(
+            Guid userId,
+            CancellationToken cancellationToken);
+
         Task<UserEntity> FindUserByEmailAsync(string email);
 
         /// <summary>

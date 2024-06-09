@@ -19,6 +19,8 @@ namespace Presentation.Middlewares
                 var value = guestId.ToString();
                 var cookieOptions = new CookieOptions
                 {
+                    HttpOnly = false,
+                    Secure = false,
                     SameSite = SameSiteMode.Strict,
                     MaxAge = TimeSpan.FromDays(7),
                 };

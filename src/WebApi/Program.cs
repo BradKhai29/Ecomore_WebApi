@@ -14,11 +14,10 @@ services.AddBusinessLogic();
 #endregion
 
 #region Presentation Configuration
-services.AddOptionsConfiguration(configurationManager: configuration);
-services.AddMiddlewareConfiguration();
+services.AddOptionsConfiguration(configuration);
 services.AddAuthenticationConfiguration();
 services.AddAuthorizationConfiguration();
-services.AddWebApiConfiguration();
+services.AddWebApiConfiguration(configuration);
 services.AddSignalR();
 // Read more about custom exception handler: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling?view=aspnetcore-8.0
 services.AddExceptionHandler(options =>
@@ -47,7 +46,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseMiddleware<GuestIdCookieMiddleware>();
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 

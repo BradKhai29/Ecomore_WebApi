@@ -17,15 +17,19 @@ namespace WebApi.Controllers
             _productService = userProductService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllProductsAsync(CancellationToken cancellationToken)
+        [HttpGet("all/{pageSize:int}")]
+        public async Task<IActionResult> GetAllProductsAsync(
+            int pageSize,
+            CancellationToken cancellationToken)
         {
-            var products = await _productService.GetAllProductsAsync(cancellationToken);
-
-            if (Equals(products, null))
+            if (pageSize < 1)
             {
-                return NoContent();
+                pageSize = 100;
             }
+
+            var products = await _productService.GetAllProductsAsync(
+                pageSize: pageSize,
+                cancellationToken: cancellationToken);
 
             var productDtos = products.Select(selector: item => new GetProductForGeneralDisplayDto
             {

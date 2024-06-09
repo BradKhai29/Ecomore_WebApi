@@ -6,6 +6,9 @@ namespace WebApi.DTOs.Implementation.ShoppingCarts.Incomings
     public sealed class AddCartItemDto
     {
         [IsValidGuid]
+        public Guid CartId { get; set; }
+
+        [IsValidGuid]
         public Guid ProductId { get; set; }
 
         [Required]

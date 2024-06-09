@@ -4,11 +4,6 @@ using DataAccess.DbContexts;
 using DataAccess.Entities;
 using DataAccess.UnitOfWorks.Base;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogic.Services.Core.Implemetation
 {
@@ -114,6 +109,7 @@ namespace BusinessLogic.Services.Core.Implemetation
             return result;
         }
 
+        // This method has complex business logic.
         public async Task<bool> ConfirmPaymentByOrderCodeAsync(
             long orderCode,
             CancellationToken cancellationToken)
@@ -131,8 +127,52 @@ namespace BusinessLogic.Services.Core.Implemetation
                     var foundOrder = await _unitOfWork.OrderRepository.FindOrderByOrderCodeAsync(
                         orderCode: orderCode,
                         cancellationToken: cancellationToken);
-                    
-                    foundOrder.StatusId = OrderStatuses.Pending.Id;
+
+                    var purchaseProductIds = foundOrder.OrderItems.Select(orderItem => orderItem.ProductId);
+
+                    var purchaseProducts = await _unitOfWork.ProductRepository.FindAllProductsByIdListForOrderConfirmAsync(
+                        productIds: purchaseProductIds,
+                        cancellationToken: cancellationToken);
+
+                    var isValidToConfirm = true;
+
+                    foreach (var purchaseProduct in purchaseProducts)
+                    {
+                        var purchaseOrderItem = foundOrder.OrderItems.FirstOrDefault(
+                            predicate: item => item.ProductId == purchaseProduct.Id);
+
+                        if (purchaseOrderItem == null)
+                        {
+                            isValidToConfirm = false;
+                            break;
+                        }
+
+                        // Process to decrease the quantity of the purchased product item.
+                        purchaseProduct.QuantityInStock -= purchaseOrderItem.SellingQuantity;
+
+                        var isValid = purchaseProduct.QuantityInStock >= 0;
+                        if (!isValid)
+                        {
+                            isValidToConfirm = false;
+                            break;
+                        }
+                    }
+
+                    if (!isValidToConfirm)
+                    {
+                        foundOrder.StatusId = OrderStatuses.Cancelled.Id;
+                    }
+                    else
+                    {
+                        foundOrder.StatusId = OrderStatuses.Pending.Id;
+                        
+                        foreach(var product in purchaseProducts)
+                        {
+                            await _unitOfWork.ProductRepository.BulkUpdateQuantityInStockAsync(
+                                productToUpdate: product,
+                                cancellationToken: cancellationToken);
+                        }
+                    }
 
                     await _unitOfWork.OrderRepository.BulkUpdateOrderStatusAsync(
                         orderToUpdate: foundOrder,
@@ -140,7 +180,7 @@ namespace BusinessLogic.Services.Core.Implemetation
 
                     await _unitOfWork.CommitTransactionAsync(cancellationToken: cancellationToken);
 
-                    result = true;
+                    result = isValidToConfirm;
                 }
                 catch (Exception)
                 {
@@ -153,6 +193,42 @@ namespace BusinessLogic.Services.Core.Implemetation
             });
 
             return result;
+        }
+
+        public Task<IEnumerable<OrderEntity>> GetAllOrdersByUserIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return _unitOfWork.OrderRepository.GetAllOrdersByUserIdAsync(
+                userId: userId,
+                cancellationToken: cancellationToken);
+        }
+
+        public Task<IEnumerable<OrderEntity>> GetAllOrdersByGuestIdAsync(
+            Guid guestId,
+            CancellationToken cancellationToken)
+        {
+            return _unitOfWork.OrderRepository.GetAllOrdersByGuestIdAsync(
+                guestId: guestId,
+                cancellationToken: cancellationToken);
+        }
+
+        public Task<bool> IsOrderExistedByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken)
+        {
+            return _unitOfWork.OrderRepository.IsFoundByExpressionAsync(
+                findExpresison: order => order.Id == orderId,
+                cancellationToken: cancellationToken);
+        }
+
+        public Task<OrderEntity> FindOrderByIdForDetailDisplayAsync(
+            Guid orderId,
+            CancellationToken cancellationToken)
+        {
+            return _unitOfWork.OrderRepository.FindOrderByIdForDetailDisplayAsync(
+                orderId: orderId,
+                cancellationToken: cancellationToken);
         }
     }
 }

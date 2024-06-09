@@ -6,6 +6,9 @@ namespace WebApi.DTOs.Implementation.Orders.Incomings
 {
     public class OrderBillingDetailDto : IDtoNormalization
     {
+        [IsValidGuid]
+        public Guid CartId { get; set; }
+
         [Required]
         public string FirstName { get; set; }
 

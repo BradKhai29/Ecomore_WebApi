@@ -58,7 +58,7 @@ namespace WebApi.DTOs.Implementation.ShoppingCarts.Incomings
         {
             return (CartItems == null) || (CartItems.Count == 0);
         }
-        
+
         public void Clear()
         {
             CartItems.Clear();

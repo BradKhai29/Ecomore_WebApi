@@ -1,10 +1,71 @@
-﻿using WebApi.DTOs.Implementation.ShoppingCarts.Incomings;
+﻿using BusinessLogic.Models;
+using System.Collections.Concurrent;
+using WebApi.DTOs.Implementation.ShoppingCarts.Incomings;
 using WebApi.Shared.AppConstants;
 
 namespace WebApi.Helpers
 {
     public static class ShoppingCartHelper
     {
+        /// <summary>
+        ///     The dictionary of shopping carts, with key is the cartId.
+        /// </summary>
+        private static ConcurrentDictionary<Guid, InputShoppingCartDto> _shoppingCarts;
+
+        private static readonly object _lock = new();
+
+        static ShoppingCartHelper()
+        {
+            lock (_lock)
+            {
+                _shoppingCarts = new ConcurrentDictionary<Guid, InputShoppingCartDto>();
+            }
+        }
+
+        /// <summary>
+        ///     Create a new shopping cart by the input <paramref name="cartId"/>
+        ///     and add it to the managed list of shopping carts.
+        /// </summary>
+        /// <param name="cartId"></param>
+        /// <returns></returns>
+        public static InputShoppingCartDto CreateShoppingCartById(Guid cartId)
+        {
+            var isIdExisted = _shoppingCarts.ContainsKey(cartId);
+
+            if (isIdExisted)
+            {
+                return _shoppingCarts[cartId];
+            }
+
+            // Create new shopping cart.
+            var shoppingCart = new InputShoppingCartDto
+            {
+                CartId = cartId,
+                GuestId = cartId,
+                CartItems = new List<AddCartItemDto>()
+            };
+
+            _shoppingCarts.TryAdd(cartId, shoppingCart);
+            return shoppingCart;
+        }
+
+        /// <summary>
+        ///     Try to get the shopping cart with provided <paramref name="cartId"/> from this application.
+        ///     If no shopping cart is found, return <see cref="AppResult{T}.Failed(string[])"/>.
+        /// </summary>
+        /// <param name="cartId"></param>
+        /// <returns></returns>
+        public static AppResult<InputShoppingCartDto> GetShoppingCart(Guid cartId)
+        {
+            var isIdExisted = _shoppingCarts.TryGetValue(cartId, out InputShoppingCartDto shoppingCart);
+            if (!isIdExisted)
+            {
+                return AppResult<InputShoppingCartDto>.Failed("CartId is not found.");
+            }
+
+            return AppResult<InputShoppingCartDto>.Success(shoppingCart);
+        }
+
         public static InputShoppingCartDto GetShoppingCart(HttpContext context)
         {
             var cookies = context.Request.Cookies;

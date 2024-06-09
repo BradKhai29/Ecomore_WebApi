@@ -13,6 +13,10 @@ namespace DataAccess.Repositories.Base
             Guid userId,
             CancellationToken cancellationToken);
 
+        Task<UserEntity> FindUserByIdForVerificationAsync(
+            Guid userId,
+            CancellationToken cancellationToken);
+
         /// <summary>
         ///     Bulk update the specified user's profile
         ///     from the input user new credentials.

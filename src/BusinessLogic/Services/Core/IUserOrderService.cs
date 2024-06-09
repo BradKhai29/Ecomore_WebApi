@@ -50,5 +50,21 @@ namespace BusinessLogic.Services.Core
         Task<bool> ConfirmPaymentByOrderCodeAsync(
             long orderCode,
             CancellationToken cancellationToken);
+
+        Task<IEnumerable<OrderEntity>> GetAllOrdersByUserIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken);
+
+        Task<IEnumerable<OrderEntity>> GetAllOrdersByGuestIdAsync(
+            Guid guestId,
+            CancellationToken cancellationToken);
+
+        Task<bool> IsOrderExistedByIdAsync(
+            Guid orderId,
+            CancellationToken cancellationToken);
+
+        Task<OrderEntity> FindOrderByIdForDetailDisplayAsync(
+            Guid orderId,
+            CancellationToken cancellationToken);
     }
 }

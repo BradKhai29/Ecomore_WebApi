@@ -1,4 +1,6 @@
-﻿namespace WebApi.DependencyInjection
+﻿using Presentation.Middlewares;
+
+namespace WebApi.DependencyInjection
 {
     public static class CustomCookieConfiguration
     {
@@ -6,7 +8,7 @@
             this IServiceCollection services
         )
         {
-
+            services.AddScoped<GuestIdCookieMiddleware>();
 
             return services;
         }

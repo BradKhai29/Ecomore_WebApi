@@ -120,11 +120,6 @@ namespace WebApi.Controllers.UserAuths
                 RefreshToken = refreshToken,
             };
 
-            // Set the guestId cookie and guestId from shopping cart
-            // to this signed-in userId.
-            HttpContextHelper.SetGuestId(HttpContext, foundUser.Id);
-            ShoppingCartHelper.SetGuestIdToShoppingCart(HttpContext, foundUser.Id);
-
             return Ok(ApiResponse.Success(loginResponseDto));
         }
 
@@ -162,6 +157,29 @@ namespace WebApi.Controllers.UserAuths
             }
 
             return Ok(ApiResponse.Success(default));
+        }
+
+        [HttpPost("verify")]
+        [Authorize(AuthenticationSchemes = CustomAuthenticationSchemes.UserAccountScheme)]
+        public async Task<IActionResult> VerifyAccessTokenAsync(CancellationToken cancellationToken)
+        {
+            var getResult = HttpContextHelper.GetUserId(HttpContext);
+
+            if (!getResult.IsSuccess)
+            {
+                return Unauthorized(ApiResponse.Failed(ApiResponse.DefaultMessage.InvalidAccessToken));
+            }
+            
+            var userId = getResult.Value;
+            var foundUser = await _userService.FindUserByIdForVerificationAsync(
+                userId: userId,
+                cancellationToken: cancellationToken);
+
+            return Ok(ApiResponse.Success(new
+            {
+                foundUser.AvatarUrl,
+                FullName = foundUser.GetFullNameWithoutSeparator(),
+            }));
         }
     }
 }

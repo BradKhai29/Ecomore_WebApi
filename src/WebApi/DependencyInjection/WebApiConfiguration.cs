@@ -1,11 +1,34 @@
-﻿using WebApi.Shared.CustomActionResults;
+﻿using Options.Models;
+using WebApi.Shared.CustomActionResults;
 
 namespace WebApi.DependencyInjection;
 
 public static class WebApiConfiguration
 {
-    public static IServiceCollection AddWebApiConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddWebApiConfiguration(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
+        var dataProtectionOptions = new ProtectionOptions();
+        dataProtectionOptions.Bind(configuration);
+
+        services.AddDataProtection(options =>
+        {
+            options.ApplicationDiscriminator = dataProtectionOptions.ApplicationDiscriminator;
+        });
+
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(
+                configurePolicy: policy =>
+                {
+                    policy.WithOrigins("http://localhost:8080/");
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.AllowCredentials();
+                });
+        });
+
         services.AddControllers(configure: config =>
         {
             config.SuppressAsyncSuffixInActionNames = config.SuppressAsyncSuffixInActionNames;

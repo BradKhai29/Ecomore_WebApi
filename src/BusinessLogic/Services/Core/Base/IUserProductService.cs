@@ -5,7 +5,13 @@ namespace BusinessLogic.Services.Core.Base
 {
     public interface IUserProductService
     {
-        Task<IEnumerable<ProductEntity>> GetAllProductsAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<ProductEntity>> GetAllProductsAsync(
+            int pageSize,
+            CancellationToken cancellationToken);
+
+        Task<IEnumerable<ProductEntity>> GetRandomProductsAsync(
+            int randomItemCount,
+            CancellationToken cancellationToken);
 
         Task<ProductEntity> FindProductByIdForDetailDisplayAsync(
             Guid productId,
@@ -28,7 +34,11 @@ namespace BusinessLogic.Services.Core.Base
         /// </param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IEnumerable<ProductEntity>> GetAllProductsFromIdListAsync(
+        Task<IEnumerable<ProductEntity>> GetAllProductsFromIdListForDisplayShoppingCartAsync(
+            IEnumerable<Guid> productIdList,
+            CancellationToken cancellationToken);
+
+        Task<IEnumerable<ProductEntity>> GetAllProductsFromIdListForDisplayOrderAsync(
             IEnumerable<Guid> productIdList,
             CancellationToken cancellationToken);
     }

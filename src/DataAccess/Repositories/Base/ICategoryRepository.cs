@@ -8,6 +8,10 @@ namespace DataAccess.Repositories.Base
     {
         Task<IEnumerable<CategoryEntity>> GetAllAsync(CancellationToken cancellationToken);
 
+        Task<IEnumerable<Guid>> GetRandomCategoryIdListAsync(
+            int randomCount,
+            CancellationToken cancellationToken);
+
         Task<int> BulkDeleteByIdAsync(
             Guid categoryId,
             CancellationToken cancellationToken);

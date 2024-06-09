@@ -22,34 +22,63 @@ namespace WebApi.Controllers
             _userProductService = userProductService;
         }
 
-        [HttpGet]
+        [HttpPost("init")]
+        public IActionResult InitNewShoppingCart()
+        {
+            Guid cartId = Guid.NewGuid();
+            ShoppingCartHelper.CreateShoppingCartById(cartId);
+
+            return Ok(ApiResponse.Success(new
+            {
+                CartId = cartId
+            }));
+        }
+
+        [HttpGet("{cartId:guid}")]
         public async Task<IActionResult> GetShoppingCartDetailAsync(
+            [IsValidGuid] Guid cartId,
             CancellationToken cancellationToken)
         {
-            // Get the shopping cart from the cookie.
-            var shoppingCart = ShoppingCartHelper.GetShoppingCart(HttpContext);
+            // Get the shopping cart from the in-memory dictionary.
+            var getResult = ShoppingCartHelper.GetShoppingCart(cartId);
 
+            if (!getResult.IsSuccess)
+            {
+                return BadRequest(ApiResponse.Failed(getResult.ErrorMessages));
+            }
+
+            var shoppingCart = getResult.Value;
+            
+            // If current shopping cart is empty, then immediately
+            // return to client to prevent uneccessary database query.
             if (shoppingCart.IsEmpty())
             {
-                return NoContent();
+                return Ok(ApiResponse.Success(
+                    body: OutputShoppingCartDto.Empty(cartId))); 
             }
 
             var productIdList = shoppingCart.GetProductIdList();
 
-            var products = await _userProductService.GetAllProductsFromIdListAsync(
+            var products = await _userProductService.GetAllProductsFromIdListForDisplayShoppingCartAsync(
                 productIdList: productIdList,
                 cancellationToken: cancellationToken);
 
-            var shoppingCartDto = new OutputShoppingCartDto();
+            var shoppingCartDto = new OutputShoppingCartDto
+            {
+                CartId = cartId,
+            };
 
             shoppingCartDto.CartItems = products.Select(product => new OutputCartItemDto
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
-                Quantity = shoppingCart.GetItemQuantity(product.Id),
                 UnitPrice = product.UnitPrice,
-                ImageUrl = product.ProductImages.First().StorageUrl
+                ImageUrl = product.ProductImages.First().StorageUrl,
+                Quantity = shoppingCart.GetItemQuantity(product.Id),
             });
+
+            shoppingCartDto.TotalPrice = shoppingCartDto.CartItems.Sum(
+                selector: product => product.SubTotal);
 
             return Ok(ApiResponse.Success(shoppingCartDto));
         }
@@ -59,28 +88,15 @@ namespace WebApi.Controllers
             AddCartItemDto cartItemDto,
             CancellationToken cancellationToken)
         {
-            var guestIdResult = HttpContextHelper.GetGuestId(HttpContext);
+            // Get the shopping cart from the in-memory dictionary.
+            var getResult = ShoppingCartHelper.GetShoppingCart(cartItemDto.CartId);
 
-            if (!guestIdResult.IsSuccess)
+            if (!getResult.IsSuccess)
             {
-                HttpContextHelper.RemoveGuestIdFromCookie(HttpContext);
-
-                return StatusCode(
-                    statusCode: StatusCodes.Status400BadRequest,
-                    value: ApiResponse.Failed("Invalid customerId cookie."));
+                return BadRequest(ApiResponse.Failed(getResult.ErrorMessages));
             }
 
-            // Get the shopping cart from the cookie.
-            var shoppingCart = ShoppingCartHelper.GetShoppingCart(HttpContext);
-
-            // Check the shopping cart guestId.
-            var hasGuestId = shoppingCart.GuestId != Guid.Empty;
-
-            // If no guestId found, then set the current guestId for this shopping cart.
-            if (!hasGuestId)
-            {
-                shoppingCart.GuestId = guestIdResult.Value;
-            }
+            var shoppingCart = getResult.Value;
 
             var foundResult = await _userProductService.FindProductByIdForAddingToCartAsync(
                 productId: cartItemDto.ProductId,
@@ -108,23 +124,27 @@ namespace WebApi.Controllers
             // Add the item to the shopping cart.
             shoppingCart.AddItem(cartItemDto);
 
-            ShoppingCartHelper.SetShoppingCart(HttpContext, shoppingCart);
-
             return Ok(ApiResponse.Success(default));
         }
 
-        [HttpDelete("{productId:guid}")]
+        [HttpDelete("{cartId:guid}/{productId:guid}")]
         public async Task<IActionResult> DeleteItemFromCartAsync(
             [FromRoute]
-            [IsValidGuid]
-            Guid productId)
+            [IsValidGuid] Guid cartId,
+            [FromRoute]
+            [IsValidGuid] Guid productId)
         {
             // Get the shopping cart from the cookie.
-            var shoppingCart = ShoppingCartHelper.GetShoppingCart(HttpContext);
+            var getResult = ShoppingCartHelper.GetShoppingCart(cartId);
+
+            if (!getResult.IsSuccess)
+            {
+                return BadRequest(ApiResponse.Failed(getResult.ErrorMessages));
+            }
+
+            var shoppingCart = getResult.Value;
 
             shoppingCart.RemoveItem(productId);
-
-            ShoppingCartHelper.SetShoppingCart(HttpContext, shoppingCart);
 
             return Ok(ApiResponse.Success(default));
         }
@@ -134,7 +154,14 @@ namespace WebApi.Controllers
             DecreaseCartItemDto cartItemDto)
         {
             // Get the shopping cart from the cookie.
-            var shoppingCart = ShoppingCartHelper.GetShoppingCart(HttpContext);
+            var getResult = ShoppingCartHelper.GetShoppingCart(cartItemDto.CartId);
+
+            if (!getResult.IsSuccess)
+            {
+                return BadRequest(ApiResponse.Failed(getResult.ErrorMessages));
+            }
+
+            var shoppingCart = getResult.Value;
 
             // Decrease the item from the shopping cart.
             shoppingCart.DecreaseItem(cartItemDto);

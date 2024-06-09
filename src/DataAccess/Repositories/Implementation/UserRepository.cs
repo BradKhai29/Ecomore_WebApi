@@ -103,6 +103,21 @@ namespace DataAccess.Repositories.Implementation
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         }
 
+        public Task<UserEntity> FindUserByIdForVerificationAsync(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .AsNoTracking()
+                .Where(user => user.Id == userId)
+                .Select(user => new UserEntity
+                {
+                    AvatarUrl = user.AvatarUrl,
+                    FullName = user.FullName,
+                })
+                .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        }
+
         public override async Task<IdentityResult> RemoveAsync(Guid id)
         {
             var foundUser = await _userManager.FindByIdAsync(userId: id.ToString());

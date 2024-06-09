@@ -20,6 +20,12 @@ namespace DTOs.Implementation.PayOs.Incomings
         [Required]
         public long OrderCode { get; set; }
 
+        /// <summary>
+        ///     This state code is used to verify the authority of the request.
+        /// </summary>
+        [Required]
+        public string StateCode { get; set; }
+
         public void NormalizeAllProperties()
         {
             Code = Code.Trim();

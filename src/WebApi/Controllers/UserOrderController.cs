@@ -6,7 +6,10 @@ using DataAccess.DataSeedings;
 using DataAccess.Entities;
 using DTOs.Implementation.PayOs.Incomings;
 using Helpers.ExtensionMethods;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
+using Options.Models;
 using WebApi.DTOs.Implementation.Checkouts.Outgoings;
 using WebApi.DTOs.Implementation.Orders.Incomings;
 using WebApi.DTOs.Implementation.Orders.Outgoings;
@@ -14,6 +17,7 @@ using WebApi.DTOs.Implementation.ShoppingCarts.Incomings;
 using WebApi.Helpers;
 using WebApi.Models;
 using WebApi.Shared.AppConstants;
+using WebApi.Shared.ValidationAttributes;
 
 namespace WebApi.Controllers
 {
@@ -24,15 +28,21 @@ namespace WebApi.Controllers
         private readonly IUserProductService _userProductService;
         private readonly IPayOsService _payOsService;
         private readonly IUserOrderService _orderService;
+        private readonly ProtectionOptions _dataProtectionOptions;
+        private readonly IDataProtectionProvider _dataProtectionProvider;
 
         public UserOrderController(
             IUserProductService userProductService,
             IPayOsService payOsService,
-            IUserOrderService orderService)
+            IUserOrderService orderService,
+            ProtectionOptions dataProtectionOptions,
+            IDataProtectionProvider dataProtectionProvider)
         {
             _userProductService = userProductService;
             _payOsService = payOsService;
             _orderService = orderService;
+            _dataProtectionOptions = dataProtectionOptions;
+            _dataProtectionProvider = dataProtectionProvider;
         }
 
         [HttpPost]
@@ -40,7 +50,14 @@ namespace WebApi.Controllers
             OrderBillingDetailDto billingDetailDto,
             CancellationToken cancellationToken)
         {
-            var shoppingCart = ShoppingCartHelper.GetShoppingCart(HttpContext);
+            var getResult = ShoppingCartHelper.GetShoppingCart(billingDetailDto.CartId);
+
+            if (!getResult.IsSuccess)
+            {
+                return BadRequest(ApiResponse.Failed("CartId is not found."));
+            }
+
+            var shoppingCart = getResult.Value;
 
             if (shoppingCart.IsEmpty())
             {
@@ -50,78 +67,46 @@ namespace WebApi.Controllers
             // Get the products from the shopping cart to create the order.
             var productIdList = shoppingCart.GetProductIdList();
 
-            var products = await _userProductService.GetAllProductsFromIdListAsync(
+            var products = await _userProductService.GetAllProductsFromIdListForDisplayShoppingCartAsync(
                 productIdList: productIdList,
                 cancellationToken: cancellationToken);
 
             var userIdResult = HttpContextHelper.GetUserId(HttpContext);
             var userId = userIdResult.IsSuccess ? userIdResult.Value : AppUsers.DoNotRemove.Id;
 
-            var guestIdResult = HttpContextHelper.GetGuestId(HttpContext);
-            var guestId = guestIdResult.IsSuccess ? guestIdResult.Value : Guid.NewGuid();
-
-            // Set again the guestId if it is removed.
-            HttpContextHelper.SetGuestId(HttpContext, guestId);
-            ShoppingCartHelper.SetGuestIdToShoppingCart(HttpContext, guestId);
-
-            var orderDto = new OrderDto
-            {
-                OrderCode = OrderEntity.GenerateOrderCode(DateTime.Now),
-                GuestId = guestId,
-                UserId = userId,
-                FirstName = billingDetailDto.FirstName,
-                LastName = billingDetailDto.LastName,
-                Email = billingDetailDto.Email,
-                PhoneNumber = billingDetailDto.PhoneNumber,
-                DeliveryAddress = billingDetailDto.DeliveryAddress,
-                SaveInformation = billingDetailDto.SaveInformation,
-                OrderNote = billingDetailDto.OrderNote,
-                CreatedAt = DateTime.Now,
-                ExpiredAt = DateTime.Now.AddDays(7),
-            };
-
-            orderDto.Items = products.Select(product => new OrderItemDto
-            {
-                ProductId = product.Id,
-                SellingPrice = product.UnitPrice,
-                SellingQuantity = shoppingCart.GetItemQuantity(product.Id),
-            });
-
-            // Get the total amount to create the check out link for user order payment.
-            var totalAmount = decimal.ToInt32(orderDto.Items.Sum(item => item.SellingPrice * item.SellingQuantity));
+            var guestId = shoppingCart.GuestId;
 
             // Save the order to the database with WaitForPurchased status.
+            var dateTimeUtcNow = DateTime.UtcNow;
             var order = new OrderEntity
             {
                 Id = Guid.NewGuid(),
-                OrderCode = orderDto.OrderCode,
+                OrderCode = OrderEntity.GenerateOrderCode(dateTimeUtcNow),
                 GuestId = guestId,
                 UserId = userId,
                 PaymentMethodId = PaymentMethods.OnlineBanking.Id,
                 StatusId = OrderStatuses.WaitForPurchased.Id,
                 OrderNote = billingDetailDto.OrderNote,
-                TotalPrice = totalAmount,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = dateTimeUtcNow,
                 DeliveredAddress = billingDetailDto.DeliveryAddress,
-                DeliveredAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                DeliveredAt = dateTimeUtcNow,
+                UpdatedAt = dateTimeUtcNow,
                 UpdatedBy = DefaultValues.SystemId,
             };
 
-            var orderItems = new List<OrderItemEntity>(orderDto.Items.Count());
-
-            foreach (var item in orderDto.Items)
+            // Get all product items from the customer shopping cart to create order item list.
+            var orderItems = products.Select(product => new OrderItemEntity
             {
-                var orderItem = new OrderItemEntity
-                {
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    SellingPrice = item.SellingPrice,
-                    SellingQuantity = item.SellingQuantity,
-                };
+                OrderId = order.Id,
+                ProductId = product.Id,
+                SellingPrice = product.UnitPrice,
+                SellingQuantity = shoppingCart.GetItemQuantity(product.Id),
+            });
 
-                orderItems.Add(orderItem);
-            }
+            // Get the total amount to create the check out link for order payment.
+            var totalAmount = decimal.ToInt32(
+                d: orderItems.Sum(item => item.SellingPrice * item.SellingQuantity));
+            order.TotalPrice = totalAmount;
 
             // If user is not logged in, then save the detail.
             var isUserNotLogIn = !userIdResult.IsSuccess;
@@ -137,6 +122,7 @@ namespace WebApi.Controllers
                 };
             }
 
+            // Save the order to the database.
             var saveResult = await _orderService.SaveOrderForCheckoutAsync(
                 order: order,
                 orderItems: orderItems,
@@ -150,7 +136,7 @@ namespace WebApi.Controllers
             }
 
             var createPaymentResult = await _payOsService.CreatePaymentResultFromOrderAsync(
-                orderCode: orderDto.OrderCode,
+                orderCode: order.OrderCode,
                 totalAmount: totalAmount);
 
             if (!createPaymentResult.IsSuccess)
@@ -159,32 +145,36 @@ namespace WebApi.Controllers
                     ApiResponse.Failed(ApiResponse.DefaultMessage.ServiceError));
             }
 
+            // Create the state code and return to the client for security purpose.
+            var protector = _dataProtectionProvider.CreateProtector(_dataProtectionOptions.PurposeKey);
+
             var checkoutInformation = createPaymentResult.Value;
             var checkoutInformationDto = new CheckoutInformationDto
             {
-                OrderCode = orderDto.OrderCode,
+                StateCode = protector.Protect($"{order.OrderCode}"),
                 CheckoutUrl = checkoutInformation.checkoutUrl
             };
 
             // Clear the shopping cart for the customer.
             shoppingCart.Clear();
-            ShoppingCartHelper.SetShoppingCart(HttpContext, shoppingCart);
 
             return Ok(ApiResponse.Success(checkoutInformationDto));
         }
 
-        [HttpGet("cancel")]
+        [HttpPost("cancel")]
         public async Task<IActionResult> CancelCheckoutAsync(
-            [FromQuery] PayOsReturnDto returnDto,
+            [FromBody] PayOsReturnDto returnDto,
             CancellationToken cancellationToken)
         {
             returnDto.NormalizeAllProperties();
 
-            var isValidStatus = PayOsPaymentStatuses.Cancelled.Equals(returnDto.Status);
+            // Verify if the state code is valid or not.
+            var protector = _dataProtectionProvider.CreateProtector(_dataProtectionOptions.PurposeKey);
+            var stateCode = protector.Unprotect(returnDto.StateCode);
 
-            if (!isValidStatus)
+            if (!stateCode.Equals(returnDto.OrderCode.ToString()))
             {
-                return BadRequest(ApiResponse.Failed("Invalid operation is found."));
+                return BadRequest(ApiResponse.Failed("Invalid request credentials."));
             }
 
             // Check if the return dto contains valid information or not.
@@ -211,36 +201,41 @@ namespace WebApi.Controllers
             // Restore again the shopping cart based on the removed order.
             var removedOrder = removeOrderResult.Value;
 
-            var shoppingCart = ShoppingCartHelper.GetShoppingCart(HttpContext);
+            var getResult = ShoppingCartHelper.GetShoppingCart(removedOrder.GuestId);
 
-            removedOrder.OrderItems.ForEach(orderItem =>
+            if (getResult.IsSuccess)
             {
-                var cartItem = new AddCartItemDto
+                var shoppingCart = getResult.Value;
+
+                removedOrder.OrderItems.ForEach(orderItem =>
                 {
-                    ProductId = orderItem.ProductId,
-                    Quantity = orderItem.SellingQuantity
-                };
+                    var cartItem = new AddCartItemDto
+                    {
+                        ProductId = orderItem.ProductId,
+                        Quantity = orderItem.SellingQuantity
+                    };
 
-                shoppingCart.AddItem(cartItem);
-            });
+                    shoppingCart.AddItem(cartItem);
+                });
+            }
 
-            ShoppingCartHelper.SetShoppingCart(HttpContext, shoppingCart);
-
-            return Ok();
+            return Ok(ApiResponse.Success(default));
         }
 
-        [HttpGet("confirm")]
+        [HttpPost("confirm")]
         public async Task<IActionResult> ConfirmCheckoutAsync(
-            [FromQuery] PayOsReturnDto returnDto,
+            [FromBody] PayOsReturnDto returnDto,
             CancellationToken cancellationToken)
         {
             returnDto.NormalizeAllProperties();
 
-            var isValidStatus = PayOsPaymentStatuses.Paid.Equals(returnDto.Status);
+            // Verify if the state code is valid or not.
+            var protector = _dataProtectionProvider.CreateProtector(_dataProtectionOptions.PurposeKey);
+            var stateCode = protector.Unprotect(returnDto.StateCode);
 
-            if (!isValidStatus)
+            if (!stateCode.Equals(returnDto.OrderCode.ToString()))
             {
-                return BadRequest(ApiResponse.Failed("Invalid operation is found."));
+                return BadRequest(ApiResponse.Failed("Invalid request credentials."));
             }
 
             // Check if the return dto contains valid information or not.
@@ -265,6 +260,113 @@ namespace WebApi.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpGet("user")]
+        [Authorize(AuthenticationSchemes = CustomAuthenticationSchemes.UserAccountScheme)]
+        public async Task<IActionResult> GetAllUserOrdersAsync(
+            CancellationToken cancellationToken)
+        {
+            var getResult = HttpContextHelper.GetUserId(HttpContext);
+
+            if (!getResult.IsSuccess)
+            {
+                return Unauthorized(ApiResponse.Failed(ApiResponse.DefaultMessage.InvalidToken));
+            }
+
+            var userId = getResult.Value;
+
+            var orders = await _orderService.GetAllOrdersByUserIdAsync(
+                userId: userId,
+                cancellationToken: cancellationToken);
+
+            var orderHistoryItems = orders.Select(order => new OrderHistoryItemDto
+            {
+                Id = order.Id,
+                OrderCode = order.OrderCode,
+                CreatedAt = order.CreatedAt,
+                ItemCount = order.OrderItems.Sum(orderItem => orderItem.SellingQuantity),
+                TotalPrice = order.TotalPrice,
+                OrderStatus = OrderStatuses.GetStatusOrderity(order.StatusId),
+            });
+
+            return Ok(ApiResponse.Success(orderHistoryItems));
+        }
+
+        [HttpGet("guest/{guestId:guid}")]
+        public async Task<IActionResult> GetAllOrdersByGuestIdAsync(
+            [IsValidGuid] Guid guestId,
+            CancellationToken cancellationToken)
+        {
+            var orders = await _orderService.GetAllOrdersByGuestIdAsync(
+                guestId: guestId,
+                cancellationToken: cancellationToken);
+
+            var orderHistoryItems = orders.Select(order => new OrderHistoryItemDto
+            {
+                Id = order.Id,
+                OrderCode = order.OrderCode,
+                CreatedAt = order.CreatedAt,
+                TotalPrice = order.TotalPrice,
+                OrderStatus = OrderStatuses.GetStatusOrderity(order.StatusId),
+            });
+
+            return Ok(ApiResponse.Success(orderHistoryItems));
+        }
+
+        [HttpGet("{orderId:guid}")]
+        public async Task<IActionResult> GetOrderByIdForDetailDisplayAsync(
+            [IsValidGuid] Guid orderId,
+            CancellationToken cancellationToken)
+        {
+            var isExisted = await _orderService.IsOrderExistedByIdAsync(
+                orderId: orderId,
+                cancellationToken: cancellationToken);
+
+            if (!isExisted)
+            {
+                return NotFound(ApiResponse.Failed($"Order with Id [{orderId}] is not found."));
+            }
+
+            // Get order from the database.
+            var foundOrder = await _orderService.FindOrderByIdForDetailDisplayAsync(
+                orderId: orderId,
+                cancellationToken: cancellationToken);
+
+            var purchasedProductIdList = foundOrder.OrderItems.Select(item => item.ProductId);
+
+            var purchasedProducts = await _userProductService.GetAllProductsFromIdListForDisplayOrderAsync(
+                productIdList: purchasedProductIdList,
+                cancellationToken: cancellationToken);
+
+            // Create dto object for response.
+            var orderDetailDto = new OrderDetailDto
+            {
+                Id = orderId,
+                OrderCode = foundOrder.OrderCode,
+                CreatedAt = foundOrder.CreatedAt,
+                OrderStatus = OrderStatuses.GetStatusOrderity(foundOrder.StatusId),
+                OrderItems = new List<OrderItemDto>(),
+                TotalPrice = foundOrder.TotalPrice,
+            };
+
+            foreach (var purchasedProduct in purchasedProducts)
+            {
+                var orderItem = foundOrder.OrderItems.FirstOrDefault(item => item.ProductId == purchasedProduct.Id);
+                var orderItemDto = new OrderItemDto
+                {
+                    ProductId = purchasedProduct.Id,
+                    ProductName = purchasedProduct.Name,
+                    SellingPrice = orderItem.SellingPrice,
+                    SellingQuantity = orderItem.SellingQuantity,
+                };
+
+                orderDetailDto.OrderItems.Add(orderItemDto);
+            }
+
+            orderDetailDto.OrderItems.TrimExcess();
+
+            return Ok(ApiResponse.Success(orderDetailDto));
         }
     }
 }

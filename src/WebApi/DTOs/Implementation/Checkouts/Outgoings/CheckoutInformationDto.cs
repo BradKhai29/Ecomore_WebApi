@@ -2,7 +2,7 @@
 {
     public sealed class CheckoutInformationDto
     {
-        public long OrderCode { get; set; }
+        public string StateCode { get; set; }
 
         public string CheckoutUrl { get; set; }
     }

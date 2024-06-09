@@ -1,4 +1,5 @@
-﻿using DataAccess.Entities;
+﻿using DataAccess.DataSeedings;
+using DataAccess.Entities;
 using DataAccess.Repositories.Base;
 using DataAccess.Repositories.Base.Generics;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +59,8 @@ namespace DataAccess.Repositories.Implementation
                             product => updateDateTime),
                     cancellationToken: cancellationToken);
         }
+
+
 
         public async Task<IEnumerable<ProductEntity>> FindAllProductsByCategoryIdAsync(
             Guid categoryId,
@@ -139,7 +142,7 @@ namespace DataAccess.Repositories.Implementation
                 .FirstOrDefaultAsync(cancellationToken: cancellationToken);
         }
 
-        public Task<ProductEntity> FindByIdForShoppingCartDisplayAsync(
+        public Task<ProductEntity> FindByIdForDisplayShoppingCartAsync(
             Guid productId,
             CancellationToken cancellationToken)
         {
@@ -220,6 +223,118 @@ namespace DataAccess.Repositories.Implementation
                     ProductImages = product.ProductImages.Select(image => new ProductImageEntity
                     {
                         StorageUrl = image.StorageUrl,
+                    })
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
+
+        public async Task<IEnumerable<ProductEntity>> GetAllAsync(
+            int pageSize,
+            CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
+                    Category = new CategoryEntity
+                    {
+                        Name = product.Category.Name
+                    },
+                    Name = product.Name,
+                    Description = product.Description,
+                    ProductStatus = new ProductStatusEntity
+                    {
+                        Name = product.ProductStatus.Name
+                    },
+                    UnitPrice = product.UnitPrice,
+                    QuantityInStock = product.QuantityInStock,
+                    ProductImages = product.ProductImages.Select(image => new ProductImageEntity
+                    {
+                        StorageUrl = image.StorageUrl,
+                    })
+                })
+                .Take(pageSize)
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
+
+        public async Task<IEnumerable<ProductEntity>> FindAllProductsByIdListForOrderConfirmAsync(
+            IEnumerable<Guid> productIds,
+            CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(product => productIds.Contains(product.Id))
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
+                    QuantityInStock = product.QuantityInStock
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
+
+        public Task<int> BulkUpdateQuantityInStockAsync(
+            ProductEntity productToUpdate,
+            CancellationToken cancellationToken)
+        {
+            return _dbSet
+                .Where(product => product.Id == productToUpdate.Id)
+                .ExecuteUpdateAsync(product => product
+                    .SetProperty(
+                        product => product.QuantityInStock,
+                        product => productToUpdate.QuantityInStock),
+                    cancellationToken: cancellationToken);
+        }
+
+        public async Task<IEnumerable<ProductEntity>> FindAllProductsByIdListForDisplayOrderAsync(
+            IEnumerable<Guid> productIdList,
+            CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(product => productIdList.Contains(product.Id))
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                })
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
+
+        public async Task<IEnumerable<Guid>> GetAllProductIdsByCategoryIdsAsync(
+            IEnumerable<Guid> categoryIds,
+            CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(product => categoryIds.Contains(product.CategoryId))
+                .Select(selector: product => product.Id)
+                .ToListAsync(cancellationToken: cancellationToken);
+        }
+
+        public async Task<IEnumerable<ProductEntity>> FindAllProductsByIdListAsync(
+            IEnumerable<Guid> productIds,
+            CancellationToken cancellationToken)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(
+                    product => productIds.Contains(product.Id) 
+                    && product.ProductStatusId == ProductStatuses.InStock.Id
+                )
+                .Select(product => new ProductEntity
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    UnitPrice = product.UnitPrice,
+                    Category = new CategoryEntity
+                    {
+                        Id = product.CategoryId,
+                        Name = product.Category.Name
+                    },
+                    ProductImages = product.ProductImages.Select(image => new ProductImageEntity
+                    {
+                        StorageUrl = image.StorageUrl
                     })
                 })
                 .ToListAsync(cancellationToken: cancellationToken);
